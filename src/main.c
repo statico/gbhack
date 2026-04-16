@@ -221,7 +221,6 @@ static void intro_screen(void) {
 
 static void title_screen(void) {
     uint8_t saved_bank;
-    uint8_t x;
 
     DISPLAY_OFF;
 
@@ -232,12 +231,9 @@ static void title_screen(void) {
     saved_bank = CURRENT_BANK;
     SWITCH_ROM(BANK(title_bg));
 
-    /* Load image tiles into both VRAM banks */
+    /* Load image tiles into VRAM bank 0 only */
     VBK_REG = 0;
     set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
-    VBK_REG = 1;
-    set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
-    VBK_REG = 0;
 
     /* Start with black palettes for fade-in */
     {
@@ -247,11 +243,23 @@ static void title_screen(void) {
         set_bkg_palette(0, 8, black);
     }
 
-    /* Write tile map and attributes — full screen image */
+    /* Write tile map */
     VBK_REG = 0;
     set_bkg_tiles(0, 0, 20, 18, title_bg_map);
+
+    /* Write attributes with VRAM bank bit cleared (all image tiles in bank 0).
+     * This frees bank 1 for font overlay on the PRESS START row. */
     VBK_REG = 1;
-    set_bkg_tiles(0, 0, 20, 18, title_bg_map_attributes);
+    {
+        uint8_t attr_row[20];
+        uint8_t ty, tx;
+        for (ty = 0; ty < 18; ty++) {
+            for (tx = 0; tx < 20; tx++) {
+                attr_row[tx] = title_bg_map_attributes[ty * 20 + tx] & 0x07;
+            }
+            set_bkg_tiles(0, ty, 20, 1, attr_row);
+        }
+    }
     VBK_REG = 0;
 
     SWITCH_ROM(saved_bank);
@@ -261,17 +269,7 @@ static void title_screen(void) {
     tiles_load_font_bank1();
     VBK_REG = 0;
 
-    /* "Press START" on second-to-last line (row 16), dark bg + light text.
-     * Fill entire row with dark space tiles, then overlay text. */
-    VBK_REG = 0;
-    for (x = 0; x < 20; x++) {
-        set_bkg_tile_xy(x, 16, ' ');
-    }
-    VBK_REG = 1;
-    for (x = 0; x < 20; x++) {
-        set_bkg_tile_xy(x, 16, PAL_UI | 0x08);
-    }
-    VBK_REG = 0;
+    /* "Press START" on row 16: font tiles from bank 1, palette 7 */
     title_draw_text(5, 16, "PRESS START", 7);
 
     SCX_REG = 0;
