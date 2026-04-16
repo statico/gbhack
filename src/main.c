@@ -13,6 +13,9 @@
 #include "sound.h"
 #include "shop.h"
 #include "pet.h"
+#include "../res/tiles.h"
+#include "../res/title_bg.h"
+#include <gb/cgb.h>
 
 /* ------------------------------------------------------------------ */
 /* Direction lookup tables                                             */
@@ -51,23 +54,95 @@ static uint8_t game_state;
 /* Title screen                                                        */
 /* ------------------------------------------------------------------ */
 
+/* Helper: write a string to BG map at (x,y) using VRAM bank 1 font tiles */
+static void title_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal) {
+    uint8_t i;
+    uint8_t attr;
+    attr = pal | 0x08;  /* palette + VRAM bank 1 bit (BG attr bit 3) */
+
+    VBK_REG = 0;
+    for (i = 0; str[i] != 0; i++) {
+        set_bkg_tile_xy(x + i, y, (uint8_t)str[i]);
+    }
+    VBK_REG = 1;
+    for (i = 0; str[i] != 0; i++) {
+        set_bkg_tile_xy(x + i, y, attr);
+    }
+    VBK_REG = 0;
+}
+
 static void title_screen(void) {
     uint16_t hiscore;
+    uint8_t saved_bank;
+    uint8_t x, y;
 
-    render_init();
+    DISPLAY_OFF;
+
+    /* Set 8000 addressing mode before loading tiles, since set_bkg_data
+     * checks LCDC bit 4 to decide whether to write to $8000 or $9000. */
+    LCDC_REG |= LCDCF_BG8000;
+
+    /* Load title BG image tiles, map, and palettes from bank 7 */
+    saved_bank = CURRENT_BANK;
+    SWITCH_ROM(BANK(title_bg));
+
+    /* Load image tiles into both VRAM banks (some tiles use bank 1) */
+    VBK_REG = 0;
+    set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
+    VBK_REG = 1;
+    set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
+    VBK_REG = 0;
+
+    set_bkg_palette(0, title_bg_PALETTE_COUNT, title_bg_palettes);
+
+    /* Write tile map and attributes */
+    VBK_REG = 0;
+    set_bkg_tiles(0, 0, 20, 18, title_bg_map);
+    VBK_REG = 1;
+    set_bkg_tiles(0, 0, 20, 18, title_bg_map_attributes);
+    VBK_REG = 0;
+
+    SWITCH_ROM(saved_bank);
+
+    /* Load font tiles (ASCII 32-127) into VRAM bank 1 for text overlay.
+     * Text rows use attribute bit 3 to select bank 1 tile data. */
+    VBK_REG = 1;
+    tiles_load_font_bank1();
+    VBK_REG = 0;
+
+    /* Clear bottom rows to space tiles (from VRAM bank 1) for text area.
+     * Use image palette 7 (dark bg + light text) for readability. */
+    VBK_REG = 0;
+    for (y = 12; y < 18; y++) {
+        for (x = 0; x < 20; x++) {
+            set_bkg_tile_xy(x, y, ' ');
+        }
+    }
+    VBK_REG = 1;
+    for (y = 12; y < 18; y++) {
+        for (x = 0; x < 20; x++) {
+            set_bkg_tile_xy(x, y, PAL_UI | 0x08);
+        }
+    }
+    VBK_REG = 0;
+
+    SCX_REG = 0;
+    SCY_REG = 0;
+    HIDE_WIN;
+    SHOW_BKG;
+    DISPLAY_ON;
+
     sound_init();
     sound_play_music(MUSIC_TITLE);
 
-    /* Title */
-    ui_draw_text(7, 2, "GBHACK", PAL_SPECIAL);
-    ui_draw_text(3, 4, "NetHack Tribute", PAL_UI);
-    ui_draw_text(3, 5, "for Game Boy Color", PAL_UI);
+    /* Draw text overlay on bottom rows.
+     * Use image palette 7 for all text (dark bg, light fg).
+     * Palette 0 has a gold tone for the title. */
+    title_draw_text(7, 12, "GBHACK", 0);
+    title_draw_text(3, 13, "NetHack Tribute", 7);
+    title_draw_text(6, 15, "- PLAY -", 0);
+    title_draw_text(5, 16, "Press START", 7);
 
-    /* Play prompt */
-    ui_draw_text(6, 8, "- PLAY -", PAL_CONSUMABLE);
-    ui_draw_text(4, 10, "Press START", PAL_UI);
-
-    /* Show high score if one exists */
     hiscore = save_get_hiscore();
     if (hiscore > 0) {
         uint8_t buf[18];
@@ -97,11 +172,8 @@ static void title_screen(void) {
         }
         buf[d] = '\0';
 
-        ui_draw_text(6, 12, (const char *)buf, PAL_NEUTRAL);
+        title_draw_text(6, 17, (const char *)buf, 7);
     }
-
-    /* Credits */
-    ui_draw_text(6, 16, "// 2026", PAL_TERRAIN);
 
     /* Wait for START */
     while (1) {

@@ -31,4 +31,8 @@ extern const unsigned int tileset_data_length;
 // Load tileset into VRAM (banked — call normally, trampoline handles bank switch)
 void tiles_load(void) BANKED;
 
+// Load font tiles (32-127) into VRAM bank 1 for text overlay.
+// Caller must set VBK_REG=1 before calling.
+void tiles_load_font_bank1(void) BANKED;
+
 #endif

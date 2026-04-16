@@ -71,6 +71,11 @@ obj/save.o: src/save.c
 	@mkdir -p obj
 	$(LCC) $(LCCFLAGS) -Wf-bo6 -c -o $@ $<
 
+# Bank 7: title screen background image
+obj/res_title_bg.o: res/title_bg.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo7 -c -o $@ $<
+
 obj/res_%.o: res/%.c
 	@mkdir -p obj
 	$(LCC) $(LCCFLAGS) -Wf-bo2 -c -o $@ $<

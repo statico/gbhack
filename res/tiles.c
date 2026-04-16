@@ -1651,3 +1651,16 @@ void tiles_load(void) BANKED {
         vram[i] = tileset_data[i];
     }
 }
+
+void tiles_load_font_bank1(void) BANKED {
+    /* Copy font tiles (ASCII 32-127) into VRAM bank 1.
+     * Used by title screen to overlay text on the background image.
+     * Caller must set VBK_REG=1 before calling, restore after. */
+    uint8_t *vram = (uint8_t *)(0x8000 + TILE_FONT_BASE * 16);
+    uint16_t i;
+    uint16_t count;
+    count = 96 * 16;  /* 96 tiles (32-127), 16 bytes each */
+    for (i = 0; i < count; i++) {
+        vram[i] = tileset_data[TILE_FONT_BASE * 16 + i];
+    }
+}

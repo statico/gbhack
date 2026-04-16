@@ -13,10 +13,10 @@
 #define title_bg_TILE_H 8
 #define title_bg_WIDTH 160
 #define title_bg_HEIGHT 144
-#define title_bg_TILE_COUNT 347
-#define title_bg_PALETTE_COUNT 3
+#define title_bg_TILE_COUNT 188
+#define title_bg_PALETTE_COUNT 8
 #define title_bg_COLORS_PER_PALETTE 4
-#define title_bg_TOTAL_COLORS 12
+#define title_bg_TOTAL_COLORS 32
 #define title_bg_MAP_ATTRIBUTES title_bg_map_attributes
 #define title_bg_MAP_ATTRIBUTES_WIDTH 20
 #define title_bg_MAP_ATTRIBUTES_HEIGHT 18
@@ -27,7 +27,7 @@ extern const unsigned char title_bg_map_attributes[360];
 
 BANKREF_EXTERN(title_bg)
 
-extern const palette_color_t title_bg_palettes[12];
-extern const uint8_t title_bg_tiles[5552];
+extern const palette_color_t title_bg_palettes[32];
+extern const uint8_t title_bg_tiles[3008];
 
 #endif
