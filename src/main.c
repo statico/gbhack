@@ -172,23 +172,20 @@ static void intro_screen(void) {
     VBK_REG = 0;
 
     /* Draw centered credits text */
-    /*  Row 4: sword icon (centered) */
-    set_bkg_tile_xy(10, 4, TILE_INTRO_SWORD);
+    set_bkg_tile_xy(9, 2, TILE_INTRO_SWORD);
 
-    /*  Row 6: "GBHack v1.0.0" (14 chars, x=3) */
-    ui_draw_text(3, 6, "GBHack v1.0.0", 0);
+    ui_draw_text(4, 4, "GBHack v1.0.0", 0);
 
-    /*  Row 7-8: "by @statico and Claude Code" */
-    ui_draw_text(3, 7, "by @statico and", 0);
-    ui_draw_text(5, 8, "Claude Code", 0);
+    ui_draw_text(3, 6, "by @statico and", 0);
+    ui_draw_text(5, 7, "Claude Code", 0);
 
-    /*  Row 10: "Based on NetHack" (16 chars, x=2) */
-    ui_draw_text(2, 10, "Based on NetHack", 0);
+    ui_draw_text(2, 9, "Based on NetHack", 0);
 
-    /*  Row 12-14: music credits */
-    ui_draw_text(6, 12, "Music by", 0);
-    ui_draw_text(4, 13, "Beatscribe &", 0);
-    ui_draw_text(3, 14, "Yoki (Trominal)", 0);
+    ui_draw_text(6, 11, "Music by", 0);
+    ui_draw_text(4, 12, "Beatscribe &", 0);
+    ui_draw_text(3, 13, "Yoki (Trominal)", 0);
+
+    ui_draw_text(2, 15, "Art: Kenney (CC0)", 0);
 
     SCX_REG = 0;
     SCY_REG = 0;

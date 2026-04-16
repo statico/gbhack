@@ -15,14 +15,16 @@
 #define TILE_ALTAR       7
 #define TILE_PLAYER      8
 #define TILE_CURSOR      9
+#define TILE_PET_CAT     22
+#define TILE_PET_DOG     23
 
 // Base indices for tile categories
 #define TILE_FONT_BASE    32   // tile 32 = space, tile 65 = 'A', etc.
-#define TILE_MONSTER_BASE 64
+#define TILE_MONSTER_BASE 192
 #define TILE_ITEM_BASE    128
 
 // Total tiles in the tileset
-#define TILE_COUNT        192
+#define TILE_COUNT        224
 
 BANKREF_EXTERN(tileset_data)
 extern const unsigned char tileset_data[];

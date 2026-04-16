@@ -28,7 +28,7 @@
 #define TILE_ICON_HOURGLASS 13
 #define TILE_ICON_SWORD     14
 #define TILE_ICON_MEAT      21
-#define TILE_MONSTER_BASE 64
+#define TILE_MONSTER_BASE 192
 #define TILE_ITEM_BASE   128
 
 /* ---- Camera ---- */
@@ -179,7 +179,7 @@ static void resolve_cell(uint8_t mx, uint8_t my, uint8_t *out_tile, uint8_t *out
             if (midx != 255) {
                 /* Pet gets a distinct tile: 'f' for cat, 'd' for dog */
                 if (midx == pet_index) {
-                    *out_tile = (player.pet_type == 1) ? 'f' : 'd';
+                    *out_tile = (player.pet_type == 1) ? TILE_PET_CAT : TILE_PET_DOG;
                     *out_pal = PAL_CONSUMABLE;
                 } else {
                     *out_tile = TILE_MONSTER_BASE + monsters[midx].type_id;

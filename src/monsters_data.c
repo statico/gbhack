@@ -4,7 +4,7 @@
  */
 #include "monsters.h"
 
-#define MONSTER_TILE_BASE 64
+#define MONSTER_TILE_BASE 192
 
 const MonsterType monster_types[] = {
     /* 0  Newt         : */
