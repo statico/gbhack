@@ -31,15 +31,15 @@
  * Each array is: [ch_used|priority, num_frames, frame_data...]
  */
 
-/* ATTACK: short sharp noise burst (CH4 only, priority 2) */
+/* ATTACK: sharp noise burst (CH4 only, priority 3) */
 static const unsigned char sfx_attack[] = {
-    0x22, 3,
+    0x23, 3,
     /* frame 0: loud noise hit */
-    0x00, 0x0F, 0x37,
+    0x02, 0x0F, 0x30,
     /* frame 1: mid noise */
-    0x00, 0x0A, 0x42,
+    0x02, 0x0C, 0x41,
     /* frame 2: fade out */
-    0x00, 0x04, 0x50,
+    0x01, 0x06, 0x50,
 };
 
 /* PICKUP: rising tone (CH2 only, priority 3) */
@@ -55,17 +55,17 @@ static const unsigned char sfx_pickup[] = {
     0x00, 0x80, 0x80, 0xC0, 0x87,
 };
 
-/* DOOR: creaking sweep (CH2 only, priority 2) */
+/* DOOR: creaking sweep (CH2 only, priority 3) */
 static const unsigned char sfx_door[] = {
-    0x82, 4,
+    0x83, 4,
     /* frame 0: low creak start */
-    0x01, 0xC0, 0xB0, 0x20, 0x84,
+    0x02, 0xC0, 0xF0, 0x20, 0x84,
     /* frame 1: sweep up */
-    0x01, 0xC0, 0xA0, 0x60, 0x85,
+    0x02, 0xC0, 0xD0, 0x60, 0x85,
     /* frame 2: sweep down */
-    0x01, 0xC0, 0x80, 0x30, 0x84,
+    0x02, 0xC0, 0xA0, 0x30, 0x84,
     /* frame 3: fade */
-    0x00, 0xC0, 0x40, 0x50, 0x85,
+    0x01, 0xC0, 0x60, 0x50, 0x85,
 };
 
 /* STAIRS: descending tone (CH2 only, priority 2) */
@@ -178,42 +178,42 @@ static const unsigned char sfx_pet[] = {
 static const unsigned char sfx_hit[] = {
     0x23, 3,
     /* frame 0: heavy impact */
-    0x00, 0x0F, 0x20,
+    0x02, 0x0F, 0x20,
     /* frame 1: rumble */
-    0x01, 0x0A, 0x31,
+    0x02, 0x0C, 0x30,
     /* frame 2: fade */
-    0x01, 0x04, 0x43,
+    0x02, 0x06, 0x42,
 };
 
-/* MISS: whoosh (CH4 only, priority 1) */
+/* MISS: whoosh (CH4 only, priority 2) */
 static const unsigned char sfx_miss[] = {
-    0x21, 3,
+    0x22, 3,
     /* frame 0: airy start */
-    0x00, 0x08, 0x60,
+    0x01, 0x0A, 0x55,
     /* frame 1: sweep through */
-    0x01, 0x06, 0x52,
+    0x02, 0x07, 0x50,
     /* frame 2: tail off */
-    0x01, 0x02, 0x44,
+    0x01, 0x03, 0x44,
 };
 
-/* STEP: soft footstep pip (CH4 only, priority 0 — lowest, won't interrupt) */
+/* STEP: footstep tap (CH4 only, priority 1) */
 static const unsigned char sfx_step[] = {
-    0x20, 2,
-    /* frame 0: soft tap */
-    0x00, 0x04, 0x61,
+    0x21, 2,
+    /* frame 0: audible tap */
+    0x01, 0x08, 0x61,
     /* frame 1: quick fade */
-    0x00, 0x01, 0x70,
+    0x00, 0x03, 0x70,
 };
 
-/* SEARCH: gentle swoosh (CH4 only, priority 1) */
+/* SEARCH: swoosh (CH4 only, priority 2) */
 static const unsigned char sfx_search[] = {
-    0x21, 3,
-    /* frame 0: soft start */
-    0x00, 0x05, 0x55,
+    0x22, 3,
+    /* frame 0: start */
+    0x01, 0x09, 0x52,
     /* frame 1: whoosh */
-    0x01, 0x04, 0x42,
+    0x02, 0x07, 0x42,
     /* frame 2: fade */
-    0x00, 0x02, 0x50,
+    0x01, 0x03, 0x50,
 };
 
 /* SFX lookup table */
@@ -270,12 +270,21 @@ static const uint8_t song_banks[] = {
     8,  /* MUSIC_VICTORY */
 };
 
+static uint8_t vbl_registered = 0;
+
 void sound_init(void) {
     /* Enable audio hardware */
     NR52_REG = 0x80; /* master sound on */
     NR51_REG = 0xFF; /* all channels to both speakers */
     NR50_REG = 0x77; /* max volume both sides */
     music_playing = 0;
+
+    /* Register VBlank handler so music ticks every frame automatically,
+       even during heavy rendering/AI/FOV computation. */
+    if (!vbl_registered) {
+        add_VBL(sound_update);
+        vbl_registered = 1;
+    }
 }
 
 void sound_play_sfx(uint8_t sfx_id) {

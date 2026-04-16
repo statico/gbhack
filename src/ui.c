@@ -16,7 +16,7 @@ uint8_t ui_needs_redraw;
 static char msg_log[MSG_LOG_SIZE][MSG_MAX_LEN + 1];
 static uint8_t msg_head;       /* next write position */
 static uint8_t msg_count;      /* total stored (max MSG_LOG_SIZE) */
-static uint8_t msg_pending;    /* a new message hasn't been shown yet */
+static uint8_t msg_pending;    /* lines pending: 0=none, 1=line1, 2=both lines */
 static uint16_t msg_last_turn; /* turn when last message was posted */
 static uint8_t msg_displayed;  /* a message is currently on screen */
 
@@ -215,14 +215,14 @@ void ui_init(void) {
 void ui_message(const char *msg) {
     uint8_t i;
 
-    /* If there is already a pending message the player hasn't seen,
-       show "--More--" before overwriting. */
-    if (msg_pending) {
+    /* If both message lines are already pending, show "--More--"
+       before clearing and starting fresh on line 1. */
+    if (msg_pending >= 2) {
         ui_message_more();
     }
 
-    /* Clear previous message from screen before showing new one */
-    if (msg_displayed) {
+    /* If no pending messages, clear any stale display */
+    if (msg_pending == 0 && msg_displayed) {
         render_clear_message();
     }
 
@@ -240,7 +240,7 @@ void ui_message(const char *msg) {
         msg_count++;
     }
 
-    msg_pending = 1;
+    msg_pending++;
     msg_displayed = 1;
     msg_last_turn = 0;  /* reset so tick counts from next call */
 }
@@ -260,16 +260,35 @@ void ui_show_messages(void) {
         return;
     }
 
-    /* Show the most recent message */
-    idx = msg_head;
-    if (idx == 0) {
-        idx = MSG_LOG_SIZE - 1;
-    } else {
-        idx--;
-    }
+    if (msg_pending >= 2) {
+        /* Two messages pending: show line 1 (second-to-last) and line 2 (last) */
+        /* Second-to-last message on line 1 */
+        idx = msg_head;
+        if (idx <= 1) {
+            idx = MSG_LOG_SIZE - (2 - idx);
+        } else {
+            idx -= 2;
+        }
+        ui_draw_text(0, MSG_LINE_Y, msg_log[idx], PAL_UI);
 
-    /* Line 1: the message text */
-    ui_draw_text(0, MSG_LINE_Y, msg_log[idx], PAL_UI);
+        /* Most recent message on line 2 */
+        idx = msg_head;
+        if (idx == 0) {
+            idx = MSG_LOG_SIZE - 1;
+        } else {
+            idx--;
+        }
+        ui_draw_text(0, MSG_LINE_Y + 1, msg_log[idx], PAL_UI);
+    } else {
+        /* Single message: show on line 1 */
+        idx = msg_head;
+        if (idx == 0) {
+            idx = MSG_LOG_SIZE - 1;
+        } else {
+            idx--;
+        }
+        ui_draw_text(0, MSG_LINE_Y, msg_log[idx], PAL_UI);
+    }
 
     msg_pending = 0;
 }

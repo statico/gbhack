@@ -12,5 +12,6 @@ void render_message(const char *msg) BANKED;  /* Show message on bottom rows */
 void render_clear_message(void) BANKED;
 void render_full_redraw(void) BANKED;    /* Force full viewport redraw */
 void render_tile_at(uint8_t map_x, uint8_t map_y) BANKED;  /* Update single tile */
+void render_flash_hit(void) BANKED;      /* Brief red/white flash on player hit */
 
 #endif

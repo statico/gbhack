@@ -753,7 +753,6 @@ static void game_loop(void) {
         prev_y = player.y;
         while (!acted) {
             wait_vbl_done();
-            sound_update();
             input_update();
 
             /* Check directional movement */
@@ -766,9 +765,7 @@ static void game_loop(void) {
                 prev_y = player.y;
                 blocked = player_move(dx, dy);
                 if (blocked) {
-                    /* Bumped a wall - search instead */
-                    handle_search();
-                    player.turns++;
+                    /* Bumped a wall - just waste the input, no turn cost */
                 }
                 acted = 1;
                 break;

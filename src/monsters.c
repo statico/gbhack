@@ -3,6 +3,7 @@
 #include "monsters.h"
 #include "dungeon.h"
 #include "player.h"
+#include "render.h"
 #include "rng.h"
 #include "sound.h"
 
@@ -294,6 +295,7 @@ static void monster_attack_player(uint8_t idx) {
 
     if (dmg > 0) {
         sound_play_sfx(SFX_ATTACK);
+        render_flash_hit();
         player_set_death_cause(monster_name(monsters[idx].type_id));
         player_take_damage(dmg);
     }

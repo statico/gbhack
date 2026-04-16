@@ -20,7 +20,7 @@
 #define TILE_ALTAR        7
 #define TILE_PLAYER       8
 #define TILE_FOUNTAIN     9
-#define TILE_TRAP        10
+#define TILE_TRAP        '^'  /* ASCII 94 - standard roguelike trap symbol */
 #define TILE_SHOP_FLOOR  11
 #define TILE_ICON_HEART     10
 #define TILE_ICON_SHIELD    11
@@ -566,4 +566,25 @@ void render_clear_message(void) BANKED {
         set_bkg_tile_xy(i, (by + 1) & 31, PAL_TERRAIN);
     }
     VBK_REG = 0;
+}
+
+/* ---- Hit flash ---- */
+
+void render_flash_hit(void) BANKED {
+    uint16_t flash_pal[4];
+    uint8_t f;
+
+    /* Flash palette 0 (terrain) to red/white for 3 frames */
+    flash_pal[0] = RGB(31,  4,  4);  /* bright red */
+    flash_pal[1] = RGB(31, 12, 12);
+    flash_pal[2] = RGB(31, 20, 20);
+    flash_pal[3] = RGB(31, 31, 31);  /* white */
+
+    set_bkg_palette(0, 1, flash_pal);
+    for (f = 0; f < 3; f++) {
+        wait_vbl_done();
+    }
+
+    /* Restore original terrain palette */
+    set_bkg_palette(0, 1, bg_palettes);
 }
