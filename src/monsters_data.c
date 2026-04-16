@@ -60,3 +60,16 @@ const MonsterType monster_types[] = {
 };
 
 uint8_t num_monster_types = 25;
+
+static const char *const monster_names[] = {
+    "Newt", "Jackal", "Bat", "Kobold", "Goblin",
+    "Giant rat", "Snake", "Acid blob", "Floating eye", "Gnome",
+    "Orc", "Zombie", "Imp", "Nymph", "Mimic",
+    "Giant spider", "Owlbear", "Wraith", "Cockatrice", "Troll",
+    "Vampire", "Dragon", "Shopkeeper", "Ghost", "Wizard"
+};
+
+const char *monster_name(uint8_t type_id) {
+    if (type_id >= num_monster_types) return "something";
+    return monster_names[type_id];
+}

@@ -286,12 +286,15 @@ static void title_screen(void) {
     fade_from_black(title_bg_palettes, 8, 8);
     SWITCH_ROM(saved_bank);
 
-    /* Wait for START with smooth palette pulse on "PRESS START" text */
+    /* Wait for START with blinking "PRESS START" text.
+     * Use tile-based blink to avoid disturbing bg palette 7. */
     {
         uint8_t frame;
-        uint16_t pulse_pal[4];
+        uint8_t visible;
+        uint8_t blink_i;
 
         frame = 0;
+        visible = 1;
 
         while (1) {
             wait_vbl_done();
@@ -301,22 +304,19 @@ static void title_screen(void) {
             }
 
             frame++;
-            /* Triangle wave: brightness 0-31-0 over 64 frames (~1 sec) */
-            {
-                uint8_t phase;
-                uint8_t bright;
-                phase = frame & 0x3F;
-                if (phase < 32) {
-                    bright = phase;
+            /* Toggle visibility every 30 frames (~0.5 sec) */
+            if ((frame % 30) == 0) {
+                visible = !visible;
+                if (visible) {
+                    title_draw_text(5, 16, "PRESS START", 7);
                 } else {
-                    bright = 63 - phase;
+                    /* Clear the text row */
+                    VBK_REG = 0;
+                    for (blink_i = 5; blink_i < 16; blink_i++) {
+                        set_bkg_tile_xy(blink_i, 16, 0);
+                    }
+                    VBK_REG = 0;
                 }
-                /* Palette 7: color 0 = dark bg, color 3 = text brightness */
-                pulse_pal[0] = RGB(2, 2, 2);
-                pulse_pal[1] = RGB(2, 2, 2);
-                pulse_pal[2] = RGB(2, 2, 2);
-                pulse_pal[3] = RGB(bright, bright, bright);
-                set_bkg_palette(7, 1, pulse_pal);
             }
         }
     }
@@ -448,6 +448,16 @@ static void ascend_stairs(void) {
     fov_clear();
     fov_calculate(player.x, player.y);
     render_full_redraw();
+
+    /* Update music for new level */
+    if (player.dungeon_level >= 15) {
+        sound_play_music(MUSIC_BOSS);
+    } else if (player.dungeon_level >= 8) {
+        sound_play_music(MUSIC_DUNGEON2);
+    } else {
+        sound_play_music(MUSIC_DUNGEON1);
+    }
+
     ui_message("You ascend.");
 }
 
@@ -460,6 +470,8 @@ static void handle_search(void) {
     uint8_t nx, ny;
     uint8_t cell;
     uint8_t terrain;
+
+    sound_play_sfx(SFX_SEARCH);
 
     for (dy = -1; dy <= 1; dy++) {
         for (dx = -1; dx <= 1; dx++) {
@@ -597,7 +609,11 @@ static void death_sequence(void) {
     render_update();
     render_status_bar();
 
-    ui_draw_text(3, 6, "-- GAME OVER --", PAL_UI);
+    ui_draw_text(3, 5, "-- GAME OVER --", PAL_UI);
+
+    /* Show cause of death */
+    ui_draw_text(2, 7, "Killed by:", PAL_UI);
+    ui_draw_text(3, 8, player_get_death_cause(), PAL_UI);
 
     /* Build score display */
     {
@@ -631,10 +647,10 @@ static void death_sequence(void) {
         }
         buf[d] = '\0';
 
-        ui_draw_text(4, 8, (const char *)buf, PAL_UI);
+        ui_draw_text(4, 10, (const char *)buf, PAL_UI);
     }
 
-    ui_draw_text(3, 11, "Press START", PAL_UI);
+    ui_draw_text(3, 13, "Press START", PAL_UI);
 
     /* Wait for START to return to title */
     while (1) {
@@ -743,11 +759,33 @@ static void game_loop(void) {
             /* Check directional movement */
             dir = input_get_direction();
             if (dir != DIR_NONE) {
+                uint8_t blocked;
                 dx = dir_dx[dir];
                 dy = dir_dy[dir];
                 prev_x = player.x;
                 prev_y = player.y;
-                player_move(dx, dy);
+                blocked = player_move(dx, dy);
+                if (blocked) {
+                    /* Bumped a wall - search instead */
+                    handle_search();
+                    player.turns++;
+                }
+                acted = 1;
+                break;
+            }
+
+            /* B button without D-pad: contextual action */
+            if ((joy_pressed & J_B) && !(joy_current & (J_UP | J_DOWN | J_LEFT | J_RIGHT))) {
+                /* If standing on an item, pick it up */
+                uint8_t floor_idx;
+                floor_idx = item_at(player.x, player.y);
+                if (floor_idx != 255) {
+                    inventory_pickup();
+                    sound_play_sfx(SFX_PICKUP);
+                } else {
+                    /* Otherwise rest/wait */
+                    ui_message("You wait.");
+                }
                 acted = 1;
                 break;
             }

@@ -12,28 +12,35 @@ LCCFLAGS  = -Wa-l -Wl-m -Wl-j -Wm-yS
 LCCFLAGS += -Wm-yC
 LCCFLAGS += -Wm-yt0x1B    # MBC5 + RAM + Battery
 LCCFLAGS += -Wm-ya4        # 4 SRAM banks (32KB)
-LCCFLAGS += -Wm-yo8        # 8 ROM banks (128KB)
+LCCFLAGS += -Wm-yo16       # 16 ROM banks (256KB)
 LCCFLAGS += -Wm-yn"GBHACK"
 LCCFLAGS += -Ilib
 
 # --- Sources ---
-SRC_FILES = $(wildcard src/*.c)
-RES_FILES = $(wildcard res/*.c)
-LIB_FILES = $(wildcard lib/cbtfx.c)
+SRC_FILES  = $(wildcard src/*.c)
+MUS_FILES  = $(wildcard src/music/*.c)
+RES_FILES  = $(wildcard res/*.c)
+LIB_FILES  = $(wildcard lib/cbtfx.c)
 
 SRC_OBJS  = $(patsubst src/%.c,obj/%.o,$(SRC_FILES))
+MUS_OBJS  = $(patsubst src/music/%.c,obj/music_%.o,$(MUS_FILES))
 RES_OBJS  = $(patsubst res/%.c,obj/res_%.o,$(RES_FILES))
 LIB_OBJS  = $(patsubst lib/%.c,obj/lib_%.o,$(LIB_FILES))
 
 LIB_LINK = $(wildcard lib/*.lib)
 
-OBJS = $(filter-out obj/save_data.o,$(SRC_OBJS)) $(RES_OBJS) $(LIB_OBJS)
+OBJS = $(filter-out obj/save_data.o,$(SRC_OBJS)) $(MUS_OBJS) $(RES_OBJS) $(LIB_OBJS)
 
 all: $(BINS)
 
 obj/%.o: src/%.c
 	@mkdir -p obj
 	$(LCC) $(LCCFLAGS) -c -o $@ $<
+
+# Bank 2: render (alongside tiles)
+obj/render.o: src/render.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo2 -c -o $@ $<
 
 # Bank 3: dungeon, fov
 obj/dungeon.o: src/dungeon.c
@@ -83,6 +90,32 @@ obj/res_%.o: res/%.c
 obj/lib_%.o: lib/%.c
 	@mkdir -p obj
 	$(LCC) $(LCCFLAGS) -c -o $@ $<
+
+# Bank 8: music (title, dungeon1, dungeon2, death, victory)
+obj/music_song_title.o: src/music/song_title.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo8 -c -o $@ $<
+
+obj/music_song_dungeon1.o: src/music/song_dungeon1.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo8 -c -o $@ $<
+
+obj/music_song_dungeon2.o: src/music/song_dungeon2.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo8 -c -o $@ $<
+
+obj/music_song_death.o: src/music/song_death.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo8 -c -o $@ $<
+
+obj/music_song_victory.o: src/music/song_victory.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo8 -c -o $@ $<
+
+# Bank 9: music (boss)
+obj/music_song_boss.o: src/music/song_boss.c
+	@mkdir -p obj
+	$(LCC) $(LCCFLAGS) -Wf-bo9 -c -o $@ $<
 
 obj/save_data.o: src/save_data.c
 	@mkdir -p obj

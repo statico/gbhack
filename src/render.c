@@ -223,7 +223,7 @@ static void write_bg_tile(uint8_t bx, uint8_t by, uint8_t tile, uint8_t attr) {
 
 /* ---- Public API ---- */
 
-void render_init(void) {
+void render_init(void) BANKED {
     uint8_t x, y;
 
     /* Must turn display off before bulk VRAM writes */
@@ -265,11 +265,11 @@ void render_init(void) {
     DISPLAY_ON;
 }
 
-void render_full_redraw(void) {
+void render_full_redraw(void) BANKED {
     needs_full_redraw = 1;
 }
 
-void render_update(void) {
+void render_update(void) BANKED {
     uint8_t vx, vy;
     uint8_t mx, my;
     uint8_t by;
@@ -353,7 +353,7 @@ void render_update(void) {
     needs_full_redraw = 0;
 }
 
-void render_tile_at(uint8_t map_x, uint8_t map_y) {
+void render_tile_at(uint8_t map_x, uint8_t map_y) BANKED {
     uint8_t tile, pal;
     uint8_t bx, by;
     int8_t vx_s, vy_s;
@@ -398,16 +398,19 @@ static uint8_t write_num(char *buf, uint16_t val, uint8_t max_digits) {
     return len;
 }
 
-void render_status_bar(void) {
+void render_status_bar(void) BANKED {
     uint8_t tiles[20];
     uint8_t attrs[20];
     uint8_t pos;
     uint8_t i;
-    uint8_t hp_end;  /* column after HP digits (for colorization) */
+    uint8_t hp_start, hp_end;
+    uint8_t ac_start, ac_end;
+    uint8_t lv_start, lv_end;
+    uint8_t gold_start, gold_end;
+    uint8_t turn_start, turn_end;
     uint8_t hp_pal;
 
-    /* Format: heart HP  shield AC  stairs DL  hourglass TURNS */
-    /* Example: ♥120 ⛊10 ↕5  ⏱12345          */
+    /* Format: heart HP  armor AC  Lv#  $gold  T turns */
     for (i = 0; i < 20; i++) {
         tiles[i] = ' ';
         attrs[i] = PAL_UI;
@@ -416,29 +419,48 @@ void render_status_bar(void) {
     pos = 0;
 
     /* Heart icon + HP (up to 3 digits) */
+    hp_start = pos;
     tiles[pos++] = TILE_ICON_HEART;
     pos += write_num((char *)&tiles[pos], player.hp, 3);
     hp_end = pos;
     tiles[pos++] = ' ';
 
-    /* Shield icon + AC (signed, up to 3 chars) */
-    tiles[pos++] = TILE_ICON_SHIELD;
+    /* Use armor item tile for AC icon */
+    ac_start = pos;
+    tiles[pos++] = (uint8_t)(TILE_ITEM_BASE + 7);  /* chain mail tile */
     if (player.ac < 0) {
         tiles[pos++] = '-';
         pos += write_num((char *)&tiles[pos], (uint16_t)(-(int16_t)player.ac), 2);
     } else {
         pos += write_num((char *)&tiles[pos], (uint16_t)player.ac, 2);
     }
+    ac_end = pos;
     tiles[pos++] = ' ';
 
-    /* Stairs icon + dungeon level (up to 2 digits) */
-    tiles[pos++] = TILE_ICON_STAIRS;
-    pos += write_num((char *)&tiles[pos], player.dungeon_level, 2);
+    /* Level */
+    lv_start = pos;
+    tiles[pos++] = 'L';
+    pos += write_num((char *)&tiles[pos], player.level, 2);
+    lv_end = pos;
     tiles[pos++] = ' ';
 
-    /* Hourglass icon + turn count (up to 5 digits) */
-    tiles[pos++] = TILE_ICON_HOURGLASS;
-    pos += write_num((char *)&tiles[pos], player.turns, 5);
+    /* Gold ($ + up to 5 digits) */
+    gold_start = pos;
+    tiles[pos++] = '$';
+    pos += write_num((char *)&tiles[pos], player.gold, 5);
+    gold_end = pos;
+    tiles[pos++] = ' ';
+
+    /* Turn count (T + up to 5 digits, only if room) */
+    if (pos < 19) {
+        turn_start = pos;
+        tiles[pos++] = 'T';
+        pos += write_num((char *)&tiles[pos], player.turns, 4);
+        turn_end = pos;
+    } else {
+        turn_start = 0;
+        turn_end = 0;
+    }
 
     /* Write tiles to BKG row 0 */
     VBK_REG = 0;
@@ -446,7 +468,6 @@ void render_status_bar(void) {
         set_bkg_tile_xy(i, 0, tiles[i]);
     }
 
-    /* Write attributes — default PAL_UI, colorize HP */
     /* HP color: green > 66%, yellow 33-66%, red < 33% */
     if (player.max_hp > 0) {
         if ((uint16_t)player.hp * 3 > (uint16_t)player.max_hp * 2) {
@@ -460,9 +481,12 @@ void render_status_bar(void) {
         hp_pal = PAL_HOSTILE;
     }
 
-    for (i = 0; i < hp_end; i++) {
-        attrs[i] = hp_pal;
-    }
+    /* Assign per-section palettes */
+    for (i = hp_start; i < hp_end; i++) attrs[i] = hp_pal;
+    for (i = ac_start; i < ac_end; i++) attrs[i] = PAL_TERRAIN;    /* light grey/brown */
+    for (i = lv_start; i < lv_end; i++) attrs[i] = PAL_UI;          /* white */
+    for (i = gold_start; i < gold_end; i++) attrs[i] = PAL_SPECIAL; /* gold/yellow */
+    for (i = turn_start; i < turn_end; i++) attrs[i] = PAL_EQUIPMENT; /* blue */
 
     VBK_REG = 1;
     for (i = 0; i < 20; i++) {
@@ -473,7 +497,7 @@ void render_status_bar(void) {
 
 /* ---- Messages ---- */
 
-void render_message(const char *msg) {
+void render_message(const char *msg) BANKED {
     uint8_t i;
     uint8_t by;
     uint8_t len;
@@ -522,7 +546,7 @@ void render_message(const char *msg) {
     VBK_REG = 0;
 }
 
-void render_clear_message(void) {
+void render_clear_message(void) BANKED {
     uint8_t i;
     uint8_t by;
 

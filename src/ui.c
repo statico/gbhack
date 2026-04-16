@@ -437,8 +437,10 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
     scroll_top = 0;
 
     {
-    uint8_t dirty;
-    dirty = 1;
+    uint8_t full_redraw;
+    uint8_t prev_cursor;
+    full_redraw = 1;
+    prev_cursor = cursor;
 
     for (;;) {
         uint8_t row;
@@ -448,7 +450,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
         uint8_t lp;
         const char *name;
 
-        if (dirty) {
+        if (full_redraw) {
         /* Clear screen and draw border */
         ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
 
@@ -501,8 +503,21 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
             ui_draw_text(2, 1 + row, line, PAL_UI);
         }
 
-        dirty = 0;
-        } /* end if dirty */
+        full_redraw = 0;
+        } else if (prev_cursor != cursor) {
+            /* Only update the two affected cursor rows, no full redraw */
+            uint8_t old_row, new_row;
+            old_row = prev_cursor - scroll_top;
+            new_row = cursor - scroll_top;
+            if (old_row < max_visible) {
+                ui_draw_text(1, 1 + old_row, " ", PAL_UI);
+            }
+            if (new_row < max_visible) {
+                ui_draw_text(1, 1 + new_row, ">", PAL_UI);
+            }
+        }
+
+        prev_cursor = cursor;
 
         /* Input loop */
         wait_vbl_done();
@@ -513,8 +528,8 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
                 cursor--;
                 if (cursor < scroll_top) {
                     scroll_top = cursor;
+                    full_redraw = 1;
                 }
-                dirty = 1;
             }
         }
 
@@ -523,8 +538,8 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
                 cursor++;
                 if (cursor >= scroll_top + max_visible) {
                     scroll_top = cursor - max_visible + 1;
+                    full_redraw = 1;
                 }
-                dirty = 1;
             }
         }
 
@@ -538,7 +553,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
             return 255;
         }
     }
-    } /* end dirty block */
+    } /* end cursor block */
 }
 
 /* ------------------------------------------------------------------ */

@@ -1,8 +1,18 @@
 #include "player.h"
 #include "dungeon.h"
 #include "monsters.h"
+#include "pet.h"
 #include "rng.h"
 #include "sound.h"
+#include "ui.h"
+
+/* Monster name lookup (defined in monsters_data.c bank 0) */
+extern const char *monster_name(uint8_t type_id);
+
+/* Death cause tracking */
+static const char *death_cause = "something";
+const char *player_get_death_cause(void) { return death_cause; }
+void player_set_death_cause(const char *cause) { death_cause = cause; }
 
 Player player;
 
@@ -34,7 +44,7 @@ void player_init(void) {
     player.shopkeeper_hostile = 0;
 }
 
-void player_move(int8_t dx, int8_t dy) {
+uint8_t player_move(int8_t dx, int8_t dy) {
     uint8_t nx, ny;
     uint8_t cell;
     uint8_t terrain;
@@ -45,7 +55,7 @@ void player_move(int8_t dx, int8_t dy) {
 
     /* Bounds check */
     if (nx >= MAP_WIDTH || ny >= MAP_HEIGHT) {
-        return;
+        return 1;
     }
 
     cell = dungeon_get_cell(nx, ny);
@@ -58,7 +68,7 @@ void player_move(int8_t dx, int8_t dy) {
             player_attack_monster(midx);
             player.nutrition--;
             player.turns++;
-            return;
+            return 0;
         }
     }
 
@@ -68,19 +78,21 @@ void player_move(int8_t dx, int8_t dy) {
         sound_play_sfx(SFX_DOOR);
         player.nutrition--;
         player.turns++;
-        return;
+        return 0;
     }
 
-    /* Check passability */
+    /* Check passability - return 1 to signal wall bump */
     if (!CELL_IS_PASSABLE(cell)) {
-        return;
+        return 1;
     }
 
     /* Move player */
     player.x = nx;
     player.y = ny;
+    sound_play_sfx(SFX_STEP);
     player.nutrition--;
     player.turns++;
+    return 0;
 }
 
 static void player_attack_monster(uint8_t idx) {
@@ -88,6 +100,32 @@ static void player_attack_monster(uint8_t idx) {
     uint8_t dmg;
     int8_t target_ac;
     const MonsterType *mt;
+
+    /* Don't attack your own pet */
+    if (idx == pet_index) {
+        ui_message("You swap with your");
+        ui_message("pet.");
+        /* Swap positions instead */
+        {
+            uint8_t px, py, mx, my, cell;
+            px = player.x;
+            py = player.y;
+            mx = monsters[idx].x;
+            my = monsters[idx].y;
+            /* Clear monster from old cell */
+            cell = dungeon_get_cell(mx, my);
+            dungeon_set_cell(mx, my, cell & ~CELL_HAS_MONSTER);
+            /* Move player to monster's position */
+            player.x = mx;
+            player.y = my;
+            /* Move monster to player's old position */
+            monsters[idx].x = px;
+            monsters[idx].y = py;
+            cell = dungeon_get_cell(px, py);
+            dungeon_set_cell(px, py, cell | CELL_HAS_MONSTER);
+        }
+        return;
+    }
 
     mt = &monster_types[monsters[idx].type_id];
     target_ac = mt->ac;
@@ -107,6 +145,21 @@ static void player_attack_monster(uint8_t idx) {
     }
 
     sound_play_sfx(SFX_HIT);
+
+    /* Show hit message */
+    {
+        const char *mname;
+        mname = monster_name(monsters[idx].type_id);
+        if (monsters[idx].hp <= dmg) {
+            /* This will kill it */
+            ui_message("You kill the");
+            ui_message(mname);
+        } else {
+            ui_message("You hit the");
+            ui_message(mname);
+        }
+    }
+
     monster_take_damage(idx, dmg);
 
     /* If monster was passive, make it aggressive */
@@ -179,6 +232,7 @@ void player_update_hunger(void) {
         player.hunger_state = HUNGER_FAINTING;
     } else {
         player.hunger_state = HUNGER_STARVED;
+        death_cause = "starvation";
         player.hp = 0;
     }
 }

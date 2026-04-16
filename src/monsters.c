@@ -6,6 +6,8 @@
 #include "rng.h"
 #include "sound.h"
 
+extern const char *monster_name(uint8_t type_id);
+
 Monster monsters[MAX_MONSTERS];
 
 /* Forward declarations */
@@ -292,12 +294,14 @@ static void monster_attack_player(uint8_t idx) {
 
     if (dmg > 0) {
         sound_play_sfx(SFX_ATTACK);
+        player_set_death_cause(monster_name(monsters[idx].type_id));
         player_take_damage(dmg);
     }
 
     /* Special effects */
     if (mt->flags & MFLAG_POISON) {
         extra = rng_roll(1, 4);
+        player_set_death_cause(monster_name(monsters[idx].type_id));
         player_take_damage(extra);
     }
 

@@ -96,25 +96,26 @@ static const unsigned char sfx_eat[] = {
     0x00, 0x03, 0x40,
 };
 
-/* DEATH: long descending wail (CH2 only, priority 5) */
+/* DEATH: descending "BOoooop" tone (CH2 only, priority 5)
+ * Starts high and smoothly descends with a long fade out */
 static const unsigned char sfx_death[] = {
     0x85, 8,
-    /* frame 0: high wail */
-    0x01, 0x80, 0xF0, 0xE0, 0x87,
-    /* frame 1 */
-    0x01, 0x80, 0xF0, 0xC0, 0x87,
-    /* frame 2 */
-    0x02, 0xC0, 0xE0, 0xA0, 0x86,
-    /* frame 3 */
-    0x02, 0xC0, 0xC0, 0x70, 0x86,
-    /* frame 4 */
-    0x02, 0xC0, 0xA0, 0x40, 0x85,
-    /* frame 5 */
-    0x03, 0xC0, 0x80, 0x00, 0x85,
-    /* frame 6 */
-    0x03, 0xC0, 0x50, 0x80, 0x84,
-    /* frame 7: rumble out */
-    0x04, 0xC0, 0x20, 0x00, 0x84,
+    /* frame 0: high start "B" */
+    0x02, 0x80, 0xF0, 0xC0, 0x87,
+    /* frame 1: start descending "Oo" */
+    0x02, 0x80, 0xF0, 0x80, 0x87,
+    /* frame 2: "oo" */
+    0x03, 0x80, 0xE0, 0x40, 0x87,
+    /* frame 3: "oo" lower */
+    0x03, 0x80, 0xD0, 0x00, 0x86,
+    /* frame 4: "oo" even lower */
+    0x04, 0xC0, 0xB0, 0x80, 0x85,
+    /* frame 5: "p" fading */
+    0x04, 0xC0, 0x80, 0x00, 0x85,
+    /* frame 6: tail fade */
+    0x05, 0xC0, 0x50, 0x80, 0x84,
+    /* frame 7: silence fade */
+    0x06, 0xC0, 0x20, 0x00, 0x84,
 };
 
 /* LEVELUP: triumphant ascending tones (CH2 only, priority 4) */
@@ -195,6 +196,26 @@ static const unsigned char sfx_miss[] = {
     0x01, 0x02, 0x44,
 };
 
+/* STEP: soft footstep pip (CH4 only, priority 0 — lowest, won't interrupt) */
+static const unsigned char sfx_step[] = {
+    0x20, 2,
+    /* frame 0: soft tap */
+    0x00, 0x04, 0x61,
+    /* frame 1: quick fade */
+    0x00, 0x01, 0x70,
+};
+
+/* SEARCH: gentle swoosh (CH4 only, priority 1) */
+static const unsigned char sfx_search[] = {
+    0x21, 3,
+    /* frame 0: soft start */
+    0x00, 0x05, 0x55,
+    /* frame 1: whoosh */
+    0x01, 0x04, 0x42,
+    /* frame 2: fade */
+    0x00, 0x02, 0x50,
+};
+
 /* SFX lookup table */
 static const unsigned char * const sfx_table[] = {
     sfx_attack,   /* SFX_ATTACK   0 */
@@ -209,12 +230,45 @@ static const unsigned char * const sfx_table[] = {
     sfx_pet,      /* SFX_PET      9 */
     sfx_hit,      /* SFX_HIT      10 */
     sfx_miss,     /* SFX_MISS     11 */
+    sfx_step,     /* SFX_STEP     12 */
+    sfx_search,   /* SFX_SEARCH   13 */
 };
 
-#define SFX_COUNT 12
+#define SFX_COUNT 14
+
+/* Song data (in banked ROM) */
+extern const hUGESong_t song_title;
+extern const hUGESong_t song_dungeon1;
+extern const hUGESong_t song_dungeon2;
+extern const hUGESong_t song_boss;
+extern const hUGESong_t song_death;
+extern const hUGESong_t song_victory;
 
 /* Music state */
 static uint8_t music_playing = 0;
+static uint8_t music_bank = 8;
+
+/* Song pointers indexed by MUSIC_* track IDs */
+static const hUGESong_t * const song_ptrs[] = {
+    0,              /* MUSIC_NONE    0 */
+    &song_title,    /* MUSIC_TITLE   1 */
+    &song_dungeon1, /* MUSIC_DUNGEON1 2 */
+    &song_dungeon2, /* MUSIC_DUNGEON2 3 */
+    &song_boss,     /* MUSIC_BOSS    4 */
+    &song_death,    /* MUSIC_DEATH   5 */
+    &song_victory,  /* MUSIC_VICTORY 6 */
+};
+
+/* Bank numbers for each track */
+static const uint8_t song_banks[] = {
+    0,  /* MUSIC_NONE */
+    8,  /* MUSIC_TITLE */
+    8,  /* MUSIC_DUNGEON1 */
+    8,  /* MUSIC_DUNGEON2 */
+    9,  /* MUSIC_BOSS */
+    8,  /* MUSIC_DEATH */
+    8,  /* MUSIC_VICTORY */
+};
 
 void sound_init(void) {
     /* Enable audio hardware */
@@ -231,18 +285,17 @@ void sound_play_sfx(uint8_t sfx_id) {
 }
 
 void sound_play_music(uint8_t track_id) {
-    /*
-     * TODO: plug in hUGEDriver song data when .uge files are converted.
-     *
-     * Usage will be:
-     *   extern const hUGESong_t song_title;
-     *   extern const hUGESong_t song_dungeon1;
-     *   ...
-     *   hUGE_init(&song_title);
-     *   music_playing = 1;
-     */
-    (void)track_id;
-    music_playing = 0;
+    uint8_t saved_bank;
+    if (track_id == MUSIC_NONE || track_id > MUSIC_VICTORY) {
+        sound_stop_music();
+        return;
+    }
+    saved_bank = CURRENT_BANK;
+    music_bank = song_banks[track_id];
+    SWITCH_ROM(music_bank);
+    hUGE_init(song_ptrs[track_id]);
+    SWITCH_ROM(saved_bank);
+    music_playing = 1;
 }
 
 void sound_stop_music(void) {
@@ -255,11 +308,16 @@ void sound_stop_music(void) {
 }
 
 void sound_update(void) {
+    uint8_t saved_bank;
+
     /* Process CBT-FX sound effects (always, even without music) */
     CBTFX_update();
 
     /* Process hUGEDriver music tick */
     if (music_playing) {
+        saved_bank = CURRENT_BANK;
+        SWITCH_ROM(music_bank);
         hUGE_dosound();
+        SWITCH_ROM(saved_bank);
     }
 }

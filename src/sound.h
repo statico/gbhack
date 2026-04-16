@@ -16,6 +16,8 @@
 #define SFX_PET       9
 #define SFX_HIT       10
 #define SFX_MISS      11
+#define SFX_STEP      12
+#define SFX_SEARCH    13
 
 /* Music track IDs */
 #define MUSIC_NONE      0
