@@ -8,8 +8,8 @@
 #define MAP_WIDTH  40
 #define MAP_HEIGHT 30
 #define VIEWPORT_W 20
-#define VIEWPORT_H 14
-#define STATUS_ROWS 2
+#define VIEWPORT_H 15
+#define STATUS_ROWS 1
 #define MSG_ROWS    2
 
 // Max entities

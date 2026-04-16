@@ -34,6 +34,7 @@ static const int8_t dir_dy[] = {
 /* Forward declarations                                                */
 /* ------------------------------------------------------------------ */
 
+static void intro_screen(void);
 static void title_screen(void);
 static void new_game(void);
 static void game_loop(void);
@@ -71,30 +72,182 @@ static void title_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal) 
     VBK_REG = 0;
 }
 
-static void title_screen(void) {
-    uint8_t saved_bank;
+/* ------------------------------------------------------------------ */
+/* Fade helpers for palette transitions                                */
+/* ------------------------------------------------------------------ */
+static void fade_set_palettes(const uint16_t *target, uint8_t num_pal, uint8_t step, uint8_t max_step) {
+    uint16_t faded[32];
+    uint8_t total;
+    uint8_t c;
+
+    total = num_pal * 4;
+    if (total > 32) total = 32;
+
+    for (c = 0; c < total; c++) {
+        uint8_t r, g, b;
+        r = target[c] & 0x1F;
+        g = (target[c] >> 5) & 0x1F;
+        b = (target[c] >> 10) & 0x1F;
+        faded[c] = ((uint16_t)((r * step) / max_step)) |
+                   ((uint16_t)((g * step) / max_step) << 5) |
+                   ((uint16_t)((b * step) / max_step) << 10);
+    }
+    set_bkg_palette(0, num_pal, faded);
+}
+
+static void fade_from_black(const uint16_t *target, uint8_t num_pal, uint8_t steps) {
+    uint8_t s;
+    for (s = 0; s <= steps; s++) {
+        wait_vbl_done();
+        fade_set_palettes(target, num_pal, s, steps);
+    }
+}
+
+static void fade_to_black(const uint16_t *target, uint8_t num_pal, uint8_t steps) {
+    uint8_t s;
+    for (s = steps; s > 0; s--) {
+        wait_vbl_done();
+        fade_set_palettes(target, num_pal, s, steps);
+    }
+    /* Final frame: all black */
+    {
+        uint16_t black[32];
+        uint8_t c;
+        uint8_t total;
+        total = num_pal * 4;
+        if (total > 32) total = 32;
+        for (c = 0; c < total; c++) black[c] = 0;
+        wait_vbl_done();
+        set_bkg_palette(0, num_pal, black);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Intro / credits screen                                              */
+/* ------------------------------------------------------------------ */
+
+/* Palette for intro screen: dark bg, light text */
+static const uint16_t intro_palette[4] = {
+    RGB( 2,  2,  2),  /* color 0: near-black bg */
+    RGB( 2,  2,  2),  /* color 1: unused */
+    RGB( 2,  2,  2),  /* color 2: unused */
+    RGB(31, 31, 31)   /* color 3: white text */
+};
+
+/* Sword icon tile index */
+#define TILE_INTRO_SWORD 14
+
+static void intro_screen(void) {
     uint8_t x, y;
+    uint16_t wait_frames;
 
     DISPLAY_OFF;
 
-    /* Set 8000 addressing mode before loading tiles, since set_bkg_data
-     * checks LCDC bit 4 to decide whether to write to $8000 or $9000. */
+    /* Set 8000 addressing mode */
+    LCDC_REG |= LCDCF_BG8000;
+
+    /* Load gameplay tileset (has font + sword icon) */
+    tiles_load();
+
+    /* Start with black palette */
+    {
+        uint16_t black[4];
+        black[0] = 0; black[1] = 0; black[2] = 0; black[3] = 0;
+        set_bkg_palette(0, 1, black);
+    }
+
+    /* Clear entire screen to dark background */
+    VBK_REG = 0;
+    for (y = 0; y < 18; y++) {
+        for (x = 0; x < 20; x++) {
+            set_bkg_tile_xy(x, y, ' ');
+        }
+    }
+    /* Set all tiles to palette 0 */
+    VBK_REG = 1;
+    for (y = 0; y < 18; y++) {
+        for (x = 0; x < 20; x++) {
+            set_bkg_tile_xy(x, y, 0);
+        }
+    }
+    VBK_REG = 0;
+
+    /* Draw centered credits text */
+    /*  Row 4: sword icon (centered) */
+    set_bkg_tile_xy(10, 4, TILE_INTRO_SWORD);
+
+    /*  Row 6: "GBHack v1.0.0" (14 chars, x=3) */
+    ui_draw_text(3, 6, "GBHack v1.0.0", 0);
+
+    /*  Row 7-8: "by @statico and Claude Code" */
+    ui_draw_text(3, 7, "by @statico and", 0);
+    ui_draw_text(5, 8, "Claude Code", 0);
+
+    /*  Row 10: "Based on NetHack" (16 chars, x=2) */
+    ui_draw_text(2, 10, "Based on NetHack", 0);
+
+    /*  Row 12-14: music credits */
+    ui_draw_text(6, 12, "Music by", 0);
+    ui_draw_text(4, 13, "Beatscribe &", 0);
+    ui_draw_text(3, 14, "Yoki (Trominal)", 0);
+
+    SCX_REG = 0;
+    SCY_REG = 0;
+    HIDE_WIN;
+    SHOW_BKG;
+    DISPLAY_ON;
+
+    /* Fade in from black */
+    fade_from_black(intro_palette, 1, 8);
+
+    /* Wait ~3 seconds (180 frames at 60fps) or until START is pressed */
+    wait_frames = 0;
+    while (wait_frames < 180) {
+        wait_vbl_done();
+        input_update();
+        if (joy_pressed & J_START) {
+            break;
+        }
+        wait_frames++;
+    }
+
+    /* Fade out to black */
+    fade_to_black(intro_palette, 1, 8);
+}
+
+/* ------------------------------------------------------------------ */
+/* Title screen                                                        */
+/* ------------------------------------------------------------------ */
+
+static void title_screen(void) {
+    uint8_t saved_bank;
+    uint8_t x;
+
+    DISPLAY_OFF;
+
+    /* Set 8000 addressing mode before loading tiles */
     LCDC_REG |= LCDCF_BG8000;
 
     /* Load title BG image tiles, map, and palettes from bank 7 */
     saved_bank = CURRENT_BANK;
     SWITCH_ROM(BANK(title_bg));
 
-    /* Load image tiles into both VRAM banks (some tiles use bank 1) */
+    /* Load image tiles into both VRAM banks */
     VBK_REG = 0;
     set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
     VBK_REG = 1;
     set_bkg_data(0, title_bg_TILE_COUNT, title_bg_tiles);
     VBK_REG = 0;
 
-    set_bkg_palette(0, title_bg_PALETTE_COUNT, title_bg_palettes);
+    /* Start with black palettes for fade-in */
+    {
+        uint16_t black[32];
+        uint8_t c;
+        for (c = 0; c < 32; c++) black[c] = 0;
+        set_bkg_palette(0, 8, black);
+    }
 
-    /* Write tile map and attributes */
+    /* Write tile map and attributes — full screen image */
     VBK_REG = 0;
     set_bkg_tiles(0, 0, 20, 18, title_bg_map);
     VBK_REG = 1;
@@ -103,27 +256,23 @@ static void title_screen(void) {
 
     SWITCH_ROM(saved_bank);
 
-    /* Load font tiles (ASCII 32-127) into VRAM bank 1 for text overlay.
-     * Text rows use attribute bit 3 to select bank 1 tile data. */
+    /* Load font tiles into VRAM bank 1 for text overlay */
     VBK_REG = 1;
     tiles_load_font_bank1();
     VBK_REG = 0;
 
-    /* Clear bottom rows to space tiles (from VRAM bank 1) for text area.
-     * Use image palette 7 (dark bg + light text) for readability. */
+    /* "Press START" on second-to-last line (row 16), dark bg + light text.
+     * Fill entire row with dark space tiles, then overlay text. */
     VBK_REG = 0;
-    for (y = 12; y < 18; y++) {
-        for (x = 0; x < 20; x++) {
-            set_bkg_tile_xy(x, y, ' ');
-        }
+    for (x = 0; x < 20; x++) {
+        set_bkg_tile_xy(x, 16, ' ');
     }
     VBK_REG = 1;
-    for (y = 12; y < 18; y++) {
-        for (x = 0; x < 20; x++) {
-            set_bkg_tile_xy(x, y, PAL_UI | 0x08);
-        }
+    for (x = 0; x < 20; x++) {
+        set_bkg_tile_xy(x, 16, PAL_UI | 0x08);
     }
     VBK_REG = 0;
+    title_draw_text(5, 16, "PRESS START", 7);
 
     SCX_REG = 0;
     SCY_REG = 0;
@@ -134,20 +283,17 @@ static void title_screen(void) {
     sound_init();
     sound_play_music(MUSIC_TITLE);
 
-    /* Draw text overlay on bottom rows */
-    title_draw_text(4, 13, "GBHack v1.0.0", 7);
-    title_draw_text(2, 14, "by @statico and", 7);
-    title_draw_text(5, 15, "Claude Code", 7);
-    title_draw_text(5, 17, "PRESS START", 7);
+    /* Fade in from black */
+    SWITCH_ROM(BANK(title_bg));
+    fade_from_black(title_bg_palettes, 8, 8);
+    SWITCH_ROM(saved_bank);
 
-    /* Wait for START with pulsing "PRESS START" text */
+    /* Wait for START with smooth palette pulse on "PRESS START" text */
     {
         uint8_t frame;
-        uint8_t prev_visible;
-        uint8_t visible;
+        uint16_t pulse_pal[4];
 
         frame = 0;
-        prev_visible = 1;
 
         while (1) {
             wait_vbl_done();
@@ -157,18 +303,30 @@ static void title_screen(void) {
             }
 
             frame++;
-            /* Pulse: visible for ~40 frames, hidden for ~24 frames */
-            visible = (frame & 0x3F) < 0x28;
-            if (visible != prev_visible) {
-                if (visible) {
-                    title_draw_text(5, 17, "PRESS START", 7);
+            /* Triangle wave: brightness 0-31-0 over 64 frames (~1 sec) */
+            {
+                uint8_t phase;
+                uint8_t bright;
+                phase = frame & 0x3F;
+                if (phase < 32) {
+                    bright = phase;
                 } else {
-                    title_draw_text(5, 17, "           ", 7);
+                    bright = 63 - phase;
                 }
-                prev_visible = visible;
+                /* Palette 7: color 0 = dark bg, color 3 = text brightness */
+                pulse_pal[0] = RGB(2, 2, 2);
+                pulse_pal[1] = RGB(2, 2, 2);
+                pulse_pal[2] = RGB(2, 2, 2);
+                pulse_pal[3] = RGB(bright, bright, bright);
+                set_bkg_palette(7, 1, pulse_pal);
             }
         }
     }
+
+    /* Fade out to black before transitioning */
+    SWITCH_ROM(BANK(title_bg));
+    fade_to_black(title_bg_palettes, 8, 8);
+    SWITCH_ROM(saved_bank);
 }
 
 /* ------------------------------------------------------------------ */
@@ -633,6 +791,21 @@ static void game_loop(void) {
 
         /* --- Turn processing --- */
 
+        /* Check for items underfoot after moving */
+        if (player.x != prev_x || player.y != prev_y) {
+            uint8_t floor_idx;
+            floor_idx = item_at(player.x, player.y);
+            if (floor_idx != 255) {
+                uint8_t tid;
+                tid = floor_items[floor_idx].type_id;
+                if (item_types[tid].category == ICAT_GOLD) {
+                    ui_message("You see gold.");
+                } else {
+                    ui_message(item_appearance_name(tid));
+                }
+            }
+        }
+
         /* Auto-clear stale messages */
         ui_message_tick(player.turns);
 
@@ -701,11 +874,15 @@ void main(void) {
         /* Seed RNG from hardware divider */
         rng_seed(DIV_REG | ((uint16_t)DIV_REG << 8));
 
-        /* Title screen */
+        /* Intro credits screen, then title screen */
+        intro_screen();
         title_screen();
 
         /* Add some more entropy after player pressed start */
         rng_seed(rng_next() ^ DIV_REG);
+
+        /* Reload gameplay tileset and palettes so UI rendering works */
+        render_init();
 
         /* Check for existing save */
         loaded = 0;
@@ -716,7 +893,6 @@ void main(void) {
                 loaded = 1;
                 fov_clear();
                 fov_calculate(player.x, player.y);
-                render_init();
                 render_full_redraw();
                 ui_message("Welcome back.");
             } else {

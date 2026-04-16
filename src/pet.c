@@ -141,13 +141,12 @@ void pet_init(uint8_t type) BANKED {
 
     pet_index = slot;
     pet_away_turns = 0;
+    player.pet_type = type;
 
     if (type == PET_CAT) {
-        ui_message("A little kitten");
-        ui_message("follows you!");
+        ui_message("A kitten follows!");
     } else {
-        ui_message("A little puppy");
-        ui_message("follows you!");
+        ui_message("A puppy follows!");
     }
 }
 

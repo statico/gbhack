@@ -22,6 +22,11 @@
 #define TILE_FOUNTAIN     9
 #define TILE_TRAP        10
 #define TILE_SHOP_FLOOR  11
+#define TILE_ICON_HEART     10
+#define TILE_ICON_SHIELD    11
+#define TILE_ICON_STAIRS    12
+#define TILE_ICON_HOURGLASS 13
+#define TILE_ICON_SWORD     14
 #define TILE_MONSTER_BASE 64
 #define TILE_ITEM_BASE   128
 
@@ -394,113 +399,76 @@ static uint8_t write_num(char *buf, uint16_t val, uint8_t max_digits) {
 }
 
 void render_status_bar(void) {
-    char line[21];
+    uint8_t tiles[20];
+    uint8_t attrs[20];
     uint8_t pos;
     uint8_t i;
-    const char *hunger_str;
+    uint8_t hp_end;  /* column after HP digits (for colorization) */
+    uint8_t hp_pal;
 
-    /* Line 1: "HP:xx AC:xx Dl:xx $:xxxx" */
-    for (i = 0; i < 20; i++) line[i] = ' ';
-    line[20] = 0;
+    /* Format: heart HP  shield AC  stairs DL  hourglass TURNS */
+    /* Example: ♥120 ⛊10 ↕5  ⏱12345          */
+    for (i = 0; i < 20; i++) {
+        tiles[i] = ' ';
+        attrs[i] = PAL_UI;
+    }
 
     pos = 0;
-    /* HP */
-    line[pos++] = 'H';
-    line[pos++] = 'P';
-    line[pos++] = ':';
-    pos += write_num(&line[pos], player.hp, 3);
-    line[pos++] = ' ';
 
-    {
-    /* Save HP column range for colorization after palette write */
-    uint8_t hp_cols;
-    hp_cols = pos;
+    /* Heart icon + HP (up to 3 digits) */
+    tiles[pos++] = TILE_ICON_HEART;
+    pos += write_num((char *)&tiles[pos], player.hp, 3);
+    hp_end = pos;
+    tiles[pos++] = ' ';
 
-    /* AC */
-    line[pos++] = 'A';
-    line[pos++] = 'C';
-    line[pos++] = ':';
+    /* Shield icon + AC (signed, up to 3 chars) */
+    tiles[pos++] = TILE_ICON_SHIELD;
     if (player.ac < 0) {
-        line[pos++] = '-';
-        pos += write_num(&line[pos], (uint16_t)(-(int16_t)player.ac), 2);
+        tiles[pos++] = '-';
+        pos += write_num((char *)&tiles[pos], (uint16_t)(-(int16_t)player.ac), 2);
     } else {
-        pos += write_num(&line[pos], (uint16_t)player.ac, 2);
+        pos += write_num((char *)&tiles[pos], (uint16_t)player.ac, 2);
     }
-    line[pos++] = ' ';
+    tiles[pos++] = ' ';
 
-    /* Dungeon level */
-    line[pos++] = 'D';
-    line[pos++] = 'l';
-    line[pos++] = ':';
-    pos += write_num(&line[pos], player.dungeon_level, 2);
-    line[pos++] = ' ';
+    /* Stairs icon + dungeon level (up to 2 digits) */
+    tiles[pos++] = TILE_ICON_STAIRS;
+    pos += write_num((char *)&tiles[pos], player.dungeon_level, 2);
+    tiles[pos++] = ' ';
 
-    /* Gold */
-    line[pos++] = '$';
-    pos += write_num(&line[pos], player.gold, 4);
+    /* Hourglass icon + turn count (up to 5 digits) */
+    tiles[pos++] = TILE_ICON_HOURGLASS;
+    pos += write_num((char *)&tiles[pos], player.turns, 5);
 
-    /* Write line 1 to BKG row 0 (tile indices = ASCII values for font tiles) */
+    /* Write tiles to BKG row 0 */
     VBK_REG = 0;
     for (i = 0; i < 20; i++) {
-        set_bkg_tile_xy(i, 0, (uint8_t)line[i]);
+        set_bkg_tile_xy(i, 0, tiles[i]);
     }
 
-    /* Line 2: hunger status + turn count */
-    for (i = 0; i < 20; i++) line[i] = ' ';
-
-    switch (player.hunger_state) {
-        case HUNGER_SATIATED: hunger_str = "Satiated"; break;
-        case HUNGER_NORMAL:   hunger_str = ""; break;
-        case HUNGER_HUNGRY:   hunger_str = "Hungry"; break;
-        case HUNGER_WEAK:     hunger_str = "Weak"; break;
-        case HUNGER_FAINTING: hunger_str = "Faint"; break;
-        case HUNGER_STARVED:  hunger_str = "Starved"; break;
-        default:              hunger_str = ""; break;
+    /* Write attributes — default PAL_UI, colorize HP */
+    /* HP color: green > 66%, yellow 33-66%, red < 33% */
+    if (player.max_hp > 0) {
+        if ((uint16_t)player.hp * 3 > (uint16_t)player.max_hp * 2) {
+            hp_pal = PAL_CONSUMABLE;  /* green */
+        } else if ((uint16_t)player.hp * 3 > (uint16_t)player.max_hp) {
+            hp_pal = PAL_NEUTRAL;     /* yellow */
+        } else {
+            hp_pal = PAL_HOSTILE;     /* red */
+        }
+    } else {
+        hp_pal = PAL_HOSTILE;
     }
 
-    pos = 0;
-    for (i = 0; hunger_str[i] != 0 && pos < 12; i++) {
-        line[pos++] = hunger_str[i];
+    for (i = 0; i < hp_end; i++) {
+        attrs[i] = hp_pal;
     }
 
-    /* Pad to column 12 then show turn count */
-    if (pos < 12) pos = 12;
-    line[pos++] = 'T';
-    line[pos++] = ':';
-    pos += write_num(&line[pos], player.turns, 5);
-
-    VBK_REG = 0;
-    for (i = 0; i < 20; i++) {
-        set_bkg_tile_xy(i, 1, (uint8_t)line[i]);
-    }
-
-    /* Set BKG attributes to UI palette for status rows */
     VBK_REG = 1;
     for (i = 0; i < 20; i++) {
-        set_bkg_tile_xy(i, 0, PAL_UI);
-        set_bkg_tile_xy(i, 1, PAL_UI);
-    }
-
-    /* Colorize HP columns: green > 66%, yellow 33-66%, red < 33% */
-    {
-        uint8_t hp_pal;
-        if (player.max_hp > 0) {
-            if ((uint16_t)player.hp * 3 > (uint16_t)player.max_hp * 2) {
-                hp_pal = PAL_CONSUMABLE;  /* green */
-            } else if ((uint16_t)player.hp * 3 > (uint16_t)player.max_hp) {
-                hp_pal = PAL_NEUTRAL;     /* yellow */
-            } else {
-                hp_pal = PAL_HOSTILE;     /* red */
-            }
-        } else {
-            hp_pal = PAL_HOSTILE;
-        }
-        for (i = 0; i < hp_cols; i++) {
-            set_bkg_tile_xy(i, 0, hp_pal);
-        }
+        set_bkg_tile_xy(i, 0, attrs[i]);
     }
     VBK_REG = 0;
-    } /* end hp_cols block */
 }
 
 /* ---- Messages ---- */

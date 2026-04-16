@@ -221,6 +221,11 @@ void ui_message(const char *msg) {
         ui_message_more();
     }
 
+    /* Clear previous message from screen before showing new one */
+    if (msg_displayed) {
+        render_clear_message();
+    }
+
     /* Copy into circular buffer, truncating at MSG_MAX_LEN */
     for (i = 0; i < MSG_MAX_LEN && msg[i] != '\0'; i++) {
         msg_log[msg_head][i] = msg[i];
@@ -242,9 +247,8 @@ void ui_message(const char *msg) {
 
 void ui_show_messages(void) {
     uint8_t idx;
-    uint8_t i;
 
-    if (!msg_pending && msg_count == 0) {
+    if (!msg_pending) {
         return;
     }
 
@@ -252,6 +256,7 @@ void ui_show_messages(void) {
     ui_clear_rect(0, MSG_LINE_Y, SCREEN_W, MSG_ROWS);
 
     if (msg_count == 0) {
+        msg_pending = 0;
         return;
     }
 
@@ -265,12 +270,6 @@ void ui_show_messages(void) {
 
     /* Line 1: the message text */
     ui_draw_text(0, MSG_LINE_Y, msg_log[idx], PAL_UI);
-
-    /* If the message is long, spill onto the second line */
-    i = (uint8_t)strlen(msg_log[idx]);
-    if (i > SCREEN_W) {
-        /* Already handled by truncation, but guard anyway */
-    }
 
     msg_pending = 0;
 }
