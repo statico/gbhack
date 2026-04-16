@@ -1694,255 +1694,260 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     // RESERVED: 217-223 (blank padding)
     // ================================================================
 
+    // MONSTER TILE DESIGN NOTES
+    // 2bpp format: each row = (lo_byte, hi_byte)
+    // Color 0 = background/eyes (darkest), Color 1 = shadow (dark)
+    // Color 2 = body fill (medium),        Color 3 = outline/highlight (bright)
+
     // Tile 192: Newt — small lizard
     0x00,0x00,  // ........
     0x00,0x00,  // ........
-    0x20,0x20,  // ..#.....  (head)
-    0x78,0x78,  // .####...  (body)
-    0x3C,0x3C,  // ..####..  (body)
-    0x1C,0x1C,  // ...###..  (tail)
-    0x0A,0x0A,  // ....#.#.  (legs)
+    0x20,0x20,  // ..*.....  (eye highlight)
+    0x48,0x78,  // .*==*...  (head outline, body fill)
+    0x24,0x3C,  // ..*==*..  (body outlined)
+    0x14,0x1C,  // ...*=*..  (tail, bright tip)
+    0x0A,0x0A,  // ....*.*.  (legs)
     0x00,0x00,  // ........
 
     // Tile 193: Jackal — canine
     0x00,0x00,  // ........
-    0xA0,0xA0,  // #.#.....  (ears)
-    0x70,0x70,  // .###....  (head)
-    0x78,0x78,  // .####...  (chest)
-    0x7C,0x7C,  // .#####..  (body)
-    0x3C,0x3C,  // ..####..  (body)
-    0x24,0x24,  // ..#..#..  (legs)
+    0xA0,0xA0,  // *.*.....  (pointed ears)
+    0x70,0x70,  // .***....  (head)
+    0x48,0x58,  // .*.*=...  (face with eye socket)
+    0x64,0x7C,  // .**==*..  (body outlined)
+    0x24,0x3C,  // ..*==*..  (haunches)
+    0x24,0x24,  // ..*..=..  (legs)
     0x00,0x00,  // ........
 
     // Tile 194: Bat — wings spread
-    0x5A,0x5A,  // .#.##.#.
-    0x99,0x99,  // #..##..#
-    0xFF,0xFF,  // ########
-    0x7E,0x7E,  // .######.
-    0x3C,0x3C,  // ..####..
-    0x18,0x18,  // ...##...
-    0x1A,0x1A,  // ...##.#.
-    0x0C,0x0C,  // ....##..
+    0x5A,0x5A,  // .*.**.*.  (wing tips)
+    0x99,0x99,  // *..**..*  (wing edges)
+    0xE7,0xFF,  // ***==***  (full span, body fill center)
+    0x42,0x7E,  // .*====*.  (body outlined)
+    0x24,0x3C,  // ..*==*..  (abdomen)
+    0x18,0x18,  // ...**...  (narrow)
+    0x1A,0x1A,  // ...**.*. (tail)
+    0x0C,0x0C,  // ....**.  (feet)
 
-    // Tile 195: Kobold — small humanoid
-    0x18,0x18,  // ...##...  (head)
-    0x18,0x18,  // ...##...  (head)
-    0x3C,0x3C,  // ..####..  (shoulders)
-    0x7E,0x7E,  // .######.  (torso)
-    0x3C,0x3C,  // ..####..  (waist)
-    0x3C,0x3C,  // ..####..  (legs)
-    0x24,0x24,  // ..#..#..  (feet)
+    // Tile 195: Kobold — reptilian humanoid
+    0x38,0x38,  // ..***...  (wider head)
+    0x28,0x28,  // ..*.*...  (face with eye/nose gap)
+    0x24,0x3C,  // ..*==*..  (shoulders)
+    0x42,0x7E,  // .*====*.  (torso outlined)
+    0x24,0x3C,  // ..*==*..  (waist)
+    0x24,0x3C,  // ..*==*..  (legs)
+    0x24,0x24,  // ..*..=..  (feet)
     0x00,0x00,  // ........
 
-    // Tile 196: Goblin — hunched figure
-    0x00,0x00,  // ........
-    0x48,0x48,  // .#..#...  (pointy ears)
-    0x3C,0x3C,  // ..####..  (head)
-    0x3C,0x3C,  // ..####..  (face)
-    0x7E,0x7E,  // .######.  (torso)
-    0x3C,0x3C,  // ..####..  (waist)
-    0x24,0x24,  // ..#..#..  (feet)
-    0x00,0x00,  // ........
-
-    // Tile 197: Giant rat
-    0x00,0x00,  // ........
-    0x00,0x00,  // ........
-    0x60,0x60,  // .##.....  (ears)
-    0x7A,0x7A,  // .####.#.  (head+whisker)
-    0x7E,0x7E,  // .######.  (body)
-    0x3E,0x3E,  // ..#####.  (body+tail)
-    0x0A,0x0A,  // ....#.#.  (legs)
+    // Tile 196: Goblin — big ears, hunched
+    0xC6,0xC6,  // **...**. (BIG pointy ears)
+    0x64,0x7C,  // .**==*.. (head outlined)
+    0x24,0x2C,  // ..*.*=.. (face with eye socket)
+    0x42,0x7E,  // .*====*. (torso outlined)
+    0x24,0x3C,  // ..*==*.. (waist)
+    0x24,0x24,  // ..*..=.. (legs)
+    0x24,0x00,  // ..-..-.. (shadow feet)
     0x00,0x00,  // ........
 
-    // Tile 198: Snake — S-curve
+    // Tile 197: Giant rat — beady eye, long body
     0x00,0x00,  // ........
-    0x3C,0x3C,  // ..####..
-    0x42,0x42,  // .#....#.
-    0x02,0x02,  // ......#.
-    0x3C,0x3C,  // ..####..
-    0x40,0x40,  // .#......
-    0x42,0x42,  // .#....#.
-    0x3C,0x3C,  // ..####..
-
-    // Tile 199: Acid blob — amorphous circle
     0x00,0x00,  // ........
-    0x3C,0x3C,  // ..####..
-    0x7E,0x7E,  // .######.
-    0xFF,0xFF,  // ########
-    0xFF,0xFF,  // ########
-    0x7E,0x7E,  // .######.
-    0x3C,0x3C,  // ..####..
+    0x60,0x60,  // .**....  (ears bright)
+    0x42,0x5A,  // .*.==.*.  (head with eye, whisker)
+    0x42,0x7E,  // .*====*.  (body outlined)
+    0x22,0x3E,  // ..*===*.  (body + tail)
+    0x0A,0x0A,  // ....*.*.  (legs)
     0x00,0x00,  // ........
 
-    // Tile 200: Floating eye — eyeball
+    // Tile 198: Snake — S-curve with body shading
     0x00,0x00,  // ........
-    0x3C,0x3C,  // ..####..
-    0x42,0x42,  // .#....#.
-    0x5A,0x5A,  // .#.##.#.  (iris)
-    0x5A,0x5A,  // .#.##.#.  (iris)
-    0x42,0x42,  // .#....#.
-    0x3C,0x3C,  // ..####..
+    0x24,0x3C,  // ..*==*..  (top curve, outlined)
+    0x42,0x42,  // .*....*. (curve edge)
+    0x02,0x02,  // ......*. (curve edge)
+    0x24,0x3C,  // ..*==*..  (mid curve, outlined)
+    0x40,0x40,  // .*...... (curve edge)
+    0x42,0x42,  // .*....*. (curve edge)
+    0x24,0x3C,  // ..*==*..  (bot curve, outlined)
+
+    // Tile 199: Acid blob — bubbly, drippy
     0x00,0x00,  // ........
+    0x3C,0x3C,  // ..****..  (top, all outline)
+    0x42,0x66,  // .*=..=*. (two internal bubbles)
+    0xC3,0xFF,  // **====**  (body, outlined)
+    0xC3,0xDB,  // **..=.**  (lower bubbles)
+    0x42,0x7E,  // .*====*.  (body outlined)
+    0x2C,0x3C,  // ..*=**..  (asymmetric drip)
+    0x10,0x10,  // ...*....  (single drip)
 
-    // Tile 201: Gnome — bearded figure with pointy hat
-    0x3C,0x3C,  // ..####..  (hat)
-    0x24,0x24,  // ..#..#..  (hat brim)
-    0x3C,0x3C,  // ..####..  (face)
-    0x18,0x18,  // ...##...  (neck/beard)
-    0x3C,0x3C,  // ..####..  (torso)
-    0x7E,0x7E,  // .######.  (robe)
-    0x24,0x24,  // ..#..#..  (feet)
+    // Tile 200: Floating eye — iris with pupil highlight
     0x00,0x00,  // ........
-
-    // Tile 202: Orc — armored brute
-    0x18,0x18,  // ...##...  (helm)
-    0x18,0x18,  // ...##...  (head)
-    0x7E,0x7E,  // .######.  (shoulders)
-    0xBD,0xBD,  // #.####.#  (arms+torso)
-    0x99,0x99,  // #..##..#  (arms)
-    0xBD,0xBD,  // #.####.#  (waist)
-    0x24,0x24,  // ..#..#..  (legs)
-    0x24,0x24,  // ..#..#..  (feet)
-
-    // Tile 203: Zombie — shambling undead
-    0x18,0x18,  // ...##...  (head)
-    0xBD,0xBD,  // #.####.#  (arms out)
-    0x99,0x99,  // #..##..#  (reaching)
-    0xBD,0xBD,  // #.####.#  (torso)
-    0x7E,0x7E,  // .######.  (torso)
-    0xA5,0xA5,  // #.#..#.#  (tattered)
-    0x24,0x24,  // ..#..#..  (legs)
-    0x42,0x42,  // .#....#.  (shamble)
-
-    // Tile 204: Imp — winged demon
-    0x00,0x00,  // ........
-    0x48,0x48,  // .#..#...  (horns)
-    0x3C,0x3C,  // ..####..  (head)
-    0x7E,0x7E,  // .######.  (torso)
-    0xBD,0xBD,  // #.####.#  (wings)
-    0x3C,0x3C,  // ..####..  (waist)
-    0x18,0x18,  // ...##...  (tail)
-    0x24,0x24,  // ..#..#..  (feet)
-
-    // Tile 205: Nymph — slim figure
-    0x18,0x18,  // ...##...  (head)
-    0x18,0x18,  // ...##...  (neck)
-    0x7E,0x7E,  // .######.  (shoulders)
-    0xBD,0xBD,  // #.####.#  (arms)
-    0x7E,0x7E,  // .######.  (torso)
-    0x3C,0x3C,  // ..####..  (waist)
-    0x24,0x24,  // ..#..#..  (legs)
-    0x24,0x24,  // ..#..#..  (feet)
-
-    // Tile 206: Mimic — treasure chest
-    0xFF,0xFF,  // ########  (lid top)
-    0x81,0x81,  // #......#  (lid)
-    0xBD,0xBD,  // #.####.#  (lid detail)
-    0xBD,0xBD,  // #.####.#  (hinge)
-    0xBD,0xBD,  // #.####.#  (chest)
-    0xBD,0xBD,  // #.####.#  (chest)
-    0x81,0x81,  // #......#  (base)
-    0xFF,0xFF,  // ########  (base bottom)
-
-    // Tile 207: Giant spider — legs spread
-    0x00,0x00,  // ........
-    0x5A,0x5A,  // .#.##.#.  (front legs)
-    0x3C,0x3C,  // ..####..  (head)
-    0xFF,0xFF,  // ########  (legs+body)
-    0x3C,0x3C,  // ..####..  (abdomen)
-    0x5A,0x5A,  // .#.##.#.  (rear legs)
-    0x81,0x81,  // #......#  (leg tips)
-    0x66,0x66,  // .##..##.  (leg tips)
-
-    // Tile 208: Owlbear — horned beast
-    0xDB,0xDB,  // ##.##.##  (horns/ears)
-    0x99,0x99,  // #..##..#  (eyes)
-    0xFF,0xFF,  // ########  (face)
-    0x7E,0x7E,  // .######.  (body)
-    0x3C,0x3C,  // ..####..  (body)
-    0x3C,0x3C,  // ..####..  (body)
-    0x24,0x24,  // ..#..#..  (legs)
-    0x24,0x24,  // ..#..#..  (feet)
-
-    // Tile 209: Wraith — ghostly cloaked figure
-    0x81,0x81,  // #......#  (hood points)
-    0x7E,0x7E,  // .######.  (hood)
-    0x18,0x18,  // ...##...  (face)
-    0x18,0x18,  // ...##...  (neck)
-    0x42,0x42,  // .#....#.  (cloak)
-    0xA5,0xA5,  // #.#..#.#  (tattered)
-    0xBD,0xBD,  // #.####.#  (flowing)
-    0x24,0x24,  // ..#..#..  (wisps)
-
-    // Tile 210: Cockatrice — chicken-lizard
-    0x00,0x00,  // ........
-    0x30,0x30,  // ..##....  (crest)
-    0x78,0x78,  // .####...  (head)
-    0x3C,0x3C,  // ..####..  (neck)
-    0x3C,0x3C,  // ..####..  (body)
-    0x7E,0x7E,  // .######.  (tail fan)
-    0x24,0x24,  // ..#..#..  (legs)
+    0x3C,0x3C,  // ..****..  (lid top)
+    0x42,0x7E,  // .*====*.  (sclera, outlined)
+    0x52,0x76,  // .*=*.=*.  (iris + pupil glint)
+    0x42,0x66,  // .*=..=*.  (iris lower)
+    0x42,0x7E,  // .*====*.  (sclera, outlined)
+    0x3C,0x3C,  // ..****..  (lid bottom)
     0x00,0x00,  // ........
 
-    // Tile 211: Troll — spiky brute
-    0x5A,0x5A,  // .#.##.#.  (spiky hair)
-    0xA5,0xA5,  // #.#..#.#  (face)
-    0xA5,0xA5,  // #.#..#.#  (jaw)
-    0xFF,0xFF,  // ########  (shoulders)
-    0x7E,0x7E,  // .######.  (torso)
-    0x00,0x00,  // ........  (gap)
-    0x3C,0x3C,  // ..####..  (legs)
-    0x3C,0x3C,  // ..####..  (feet)
+    // Tile 201: Gnome — pointy hat, bearded
+    0x3C,0x3C,  // ..****..  (hat top)
+    0x24,0x24,  // ..*..=..  (hat brim)
+    0x24,0x2C,  // ..*.*=..  (face with eye)
+    0x18,0x18,  // ...**...  (beard, bright)
+    0x24,0x3C,  // ..*==*..  (torso)
+    0x42,0x7E,  // .*====*.  (robe wide)
+    0x24,0x24,  // ..*..=..  (feet)
+    0x00,0x00,  // ........
 
-    // Tile 212: Vampire — caped figure
-    0x3C,0x3C,  // ..####..  (hair)
-    0x24,0x24,  // ..#..#..  (face)
-    0x3C,0x3C,  // ..####..  (collar)
-    0x7E,0x7E,  // .######.  (cape)
-    0xFF,0xFF,  // ########  (cape spread)
-    0x66,0x66,  // .##..##.  (cape folds)
-    0x42,0x42,  // .#....#.  (cape bottom)
-    0x42,0x42,  // .#....#.  (cape tips)
+    // Tile 202: Orc — armored brute, tusks
+    0x18,0x18,  // ...**...  (helm)
+    0x14,0x14,  // ...*.*..  (face, tusks/eyes)
+    0x42,0x7E,  // .*====*.  (wide shoulders)
+    0xA5,0xBD,  // *.=**=.*  (arms + torso)
+    0x99,0x99,  // *..**..* (arms reaching)
+    0xA5,0xBD,  // *.=**=.*  (waist + arms)
+    0x24,0x24,  // ..*..=..  (legs)
+    0x24,0x24,  // ..*..=..  (feet)
+
+    // Tile 203: Zombie — arms raised, ragged
+    0x18,0x18,  // ...**...  (head)
+    0xA5,0xBD,  // *.=**=.*  (arms out, body outlined)
+    0x99,0x99,  // *..**..* (reaching)
+    0xA5,0xBD,  // *.=**=.*  (torso)
+    0x42,0x7E,  // .*====*.  (torso fill)
+    0xA5,0xA5,  // *.*..*.*  (tattered)
+    0x24,0x24,  // ..*..=..  (legs)
+    0x42,0x42,  // .*....*. (shambling)
+
+    // Tile 204: Imp — horns, wings, tail
+    0x00,0x00,  // ........
+    0x48,0x48,  // .*..*...  (horns)
+    0x24,0x3C,  // ..*==*..  (head outlined)
+    0x42,0x7E,  // .*====*.  (torso)
+    0xA5,0xBD,  // *.=**=.*  (wings + body)
+    0x24,0x3C,  // ..*==*..  (waist)
+    0x18,0x18,  // ...**...  (tail)
+    0x24,0x24,  // ..*..=..  (feet)
+
+    // Tile 205: Nymph — flowing hair, graceful
+    0x1C,0x1C,  // ...***..  (hair flowing right)
+    0x18,0x18,  // ...**...  (head)
+    0x42,0x7E,  // .*====*.  (dress top, wide)
+    0xA5,0xBD,  // *.=**=.*  (arms)
+    0x42,0x7E,  // .*====*.  (dress middle)
+    0x24,0x3C,  // ..*==*..  (dress)
+    0x24,0x24,  // ..*..=..  (legs)
+    0x24,0x24,  // ..*..=..  (feet)
+
+    // Tile 206: Mimic — chest with shaded interior
+    0xFF,0xFF,  // ********  (lid top)
+    0x81,0x81,  // *......*  (lid hollow)
+    0xA5,0xBD,  // *.=**=.*  (lid detail, body fill)
+    0xFF,0xFF,  // ********  (hinge, bright)
+    0xA5,0xBD,  // *.=**=.*  (chest body)
+    0xA5,0xBD,  // *.=**=.*  (chest body)
+    0x81,0x81,  // *......*  (base hollow)
+    0xFF,0xFF,  // ********  (base bottom)
+
+    // Tile 207: Giant spider — 8 legs, body segments
+    0x00,0x00,  // ........
+    0x5A,0x5A,  // .*.**.*. (front legs)
+    0x24,0x3C,  // ..*==*.. (head outlined)
+    0xE7,0xFF,  // ***==*** (legs+body, fill center)
+    0x24,0x3C,  // ..*==*.. (abdomen outlined)
+    0x5A,0x5A,  // .*.**.*. (rear legs)
+    0x81,0x81,  // *......* (leg tips)
+    0x66,0x66,  // .**..**.  (leg tips)
+
+    // Tile 208: Owlbear — owl face, bear body
+    0xDB,0xDB,  // **.**.** (horns/ears)
+    0x99,0x99,  // *..**..* (dark eye sockets!)
+    0xC3,0xFF,  // **====** (face, outlined interior)
+    0x42,0x7E,  // .*====*. (body)
+    0x24,0x3C,  // ..*==*.. (body)
+    0x24,0x3C,  // ..*==*.. (body)
+    0x24,0x24,  // ..*..=.. (legs)
+    0x24,0x24,  // ..*..=.. (feet)
+
+    // Tile 209: Wraith — ghostly, tattered
+    0x81,0x81,  // *......*  (hood points)
+    0x42,0x7E,  // .*====*.  (hood, body fill)
+    0x18,0x18,  // ...**...  (glowing face)
+    0x18,0x18,  // ...**...  (neck)
+    0x42,0x42,  // .*....*. (cloak)
+    0xA5,0x81,  // *.-..-.*  (tattered, shadow bits)
+    0xA5,0xBD,  // *.=**=.*  (flowing, outlined)
+    0x24,0x24,  // ..*..=..  (wisps)
+
+    // Tile 210: Cockatrice — chicken-lizard, eye detail
+    0x00,0x00,  // ........
+    0x30,0x30,  // ..**..... (crest, bright)
+    0x48,0x58,  // .*.*=...  (head with eye socket)
+    0x24,0x3C,  // ..*==*..  (neck outlined)
+    0x24,0x3C,  // ..*==*..  (body)
+    0x42,0x7E,  // .*====*.  (tail fan, outlined)
+    0x24,0x24,  // ..*..=..  (legs)
+    0x00,0x00,  // ........
+
+    // Tile 211: Troll — hunched brute, no gap
+    0x5A,0x5A,  // .*.**.*. (spiky hair)
+    0xA5,0xA5,  // *.*..*.*  (face — gaps ARE the eyes)
+    0xA5,0xBD,  // *.=**=.*  (jaw, body fill)
+    0xC3,0xFF,  // **====**  (shoulders, outlined)
+    0x42,0x7E,  // .*====*.  (torso, outlined)
+    0x24,0x3C,  // ..*==*..  (waist — was blank, now filled!)
+    0x24,0x3C,  // ..*==*..  (legs)
+    0x24,0x24,  // ..*..=..  (feet)
+
+    // Tile 212: Vampire — cape spread, glowing eyes
+    0x3C,0x3C,  // ..****..  (hair)
+    0x24,0x24,  // ..*..=..  (glowing eyes!)
+    0x24,0x3C,  // ..*==*..  (collar outlined)
+    0x42,0x7E,  // .*====*.  (cape, outlined)
+    0xC3,0xFF,  // **====**  (cape spread, outlined)
+    0x66,0x66,  // .**..**.  (cape folds)
+    0x42,0x42,  // .*....*. (cape bottom)
+    0x42,0x42,  // .*....*. (cape tips)
 
     // Tile 213: Dragon — winged beast
-    0x7C,0x7C,  // .#####..  (head/horns)
-    0xAE,0xAE,  // #.#.###.  (eye+snout)
+    0x7C,0x7C,  // .*****..  (head/horns)
+    0xAA,0xAE,  // *.*.=**.  (eye + snout, body shade)
     0xF6,0xF6,  // ####.##.  (neck)
-    0x0E,0x0E,  // ....###.  (chest)
+    0x0A,0x0E,  // ....*=*.  (chest, outlined)
     0xFD,0xFD,  // ######.#  (wing)
-    0xC1,0xC1,  // ##.....#  (wing tip)
-    0xFF,0xFF,  // ########  (body)
-    0x7E,0x7E,  // .######.  (tail)
+    0xC1,0xC1,  // ##.....*  (wing tip)
+    0xC3,0xFF,  // **====**  (body, outlined fill)
+    0x42,0x7E,  // .*====*.  (tail, outlined)
 
-    // Tile 214: Shopkeeper — aproned figure
-    0x18,0x18,  // ...##...  (head)
-    0x18,0x18,  // ...##...  (head)
-    0x66,0x66,  // .##..##.  (arms akimbo)
-    0xFF,0xFF,  // ########  (apron)
-    0xBD,0xBD,  // #.####.#  (torso)
-    0x81,0x81,  // #......#  (arms)
-    0x3C,0x3C,  // ..####..  (legs)
-    0x24,0x24,  // ..#..#..  (feet)
+    // Tile 214: Shopkeeper — friendly, aproned
+    0x18,0x18,  // ...**...  (head)
+    0x14,0x14,  // ...*.*..  (friendly eyes!)
+    0x66,0x66,  // .**..**.  (arms akimbo)
+    0xC3,0xFF,  // **====**  (apron, outlined)
+    0xA5,0xBD,  // *.=**=.*  (torso, outlined)
+    0x81,0x81,  // *......*  (arms)
+    0x24,0x3C,  // ..*==*..  (legs outlined)
+    0x24,0x24,  // ..*..=..  (feet)
 
-    // Tile 215: Ghost — spectral form
-    0x3C,0x3C,  // ..####..  (head)
-    0x7E,0x7E,  // .######.  (head)
-    0x5A,0x5A,  // .#.##.#.  (eyes)
-    0x7E,0x7E,  // .######.  (face)
-    0x7E,0x7E,  // .######.  (body)
-    0x24,0x24,  // ..#..#..  (fading)
-    0x42,0x42,  // .#....#.  (wispy)
+    // Tile 215: Ghost — spectral, fading trail
+    0x3C,0x3C,  // ..****..  (head)
+    0x42,0x7E,  // .*====*.  (head, body fill)
+    0x5A,0x5A,  // .*.**.*. (eyes — dark sockets!)
+    0x42,0x7E,  // .*====*.  (face, body fill)
+    0x42,0x7E,  // .*====*.  (body)
+    0x24,0x00,  // ..-..-..  (fading — shadow color!)
+    0x42,0x00,  // .-....-. (wispy — shadow only!)
     0x00,0x00,  // ........
 
-    // Tile 216: Wizard — robed mage
-    0x18,0x18,  // ...##...  (hat point)
-    0x18,0x18,  // ...##...  (hat)
-    0x3C,0x3C,  // ..####..  (hat brim)
-    0x5A,0x5A,  // .#.##.#.  (face)
-    0x5A,0x5A,  // .#.##.#.  (shoulders)
-    0x3C,0x3C,  // ..####..  (robe)
-    0x3C,0x3C,  // ..####..  (robe)
-    0x3C,0x3C,  // ..####..  (robe bottom)
+    // Tile 216: Wizard — hat, robed mage
+    0x18,0x18,  // ...**...  (hat point)
+    0x18,0x18,  // ...**...  (hat)
+    0x24,0x3C,  // ..*==*..  (brim outlined)
+    0x5A,0x5A,  // .*.**.*. (face — eye sockets)
+    0x5A,0x5A,  // .*.**.*. (arms/shoulders)
+    0x24,0x3C,  // ..*==*..  (robe)
+    0x24,0x3C,  // ..*==*..  (robe)
+    0x24,0x3C,  // ..*==*..  (robe bottom)
 
     // Tiles 217-223: Reserved (blank)
     // Tile 217
