@@ -1,0 +1,27 @@
+# Build output
+build/
+obj/
+*.o
+*.lst
+*.map
+*.noi
+*.sym
+*.ihx
+
+# ROM and save files
+*.gb
+*.gbc
+*.sav
+
+# Intermediate asset files
+*_raw.rgb
+
+# Debug/test artifacts
+screenshot*.png
+diana_test.txt
+test_output.txt
+
+# System/tools
+.DS_Store
+gbdk/
+.superpowers/
