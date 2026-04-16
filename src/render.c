@@ -588,3 +588,40 @@ void render_flash_hit(void) BANKED {
     /* Restore original terrain palette */
     set_bkg_palette(0, 1, bg_palettes);
 }
+
+/* ---- Attack bump animation ---- */
+
+void render_bump_attack(uint8_t from_x, uint8_t from_y,
+                        uint8_t to_x, uint8_t to_y) BANKED {
+    uint8_t atk_tile, atk_pal;
+    uint8_t def_tile, def_pal;
+    int8_t vx_s, vy_s;
+    uint8_t bx, by;
+    uint8_t f;
+
+    /* Resolve attacker appearance */
+    resolve_cell(from_x, from_y, &atk_tile, &atk_pal);
+
+    /* Save defender tile so we can restore it */
+    resolve_cell(to_x, to_y, &def_tile, &def_pal);
+
+    /* Convert defender map coords to BG position */
+    vx_s = (int8_t)(to_x - camera_x);
+    vy_s = (int8_t)(to_y - camera_y);
+    if (vx_s < 0 || vx_s >= VIEWPORT_W) return;
+    if (vy_s < 0 || vy_s >= VIEWPORT_H) return;
+
+    bx = (uint8_t)vx_s;
+    by = ((uint8_t)vy_s + STATUS_ROWS) & 31;
+
+    /* Write attacker tile at defender position */
+    write_bg_tile(bx, by, atk_tile, atk_pal);
+
+    /* Hold for 4 frames */
+    for (f = 0; f < 4; f++) {
+        wait_vbl_done();
+    }
+
+    /* Restore defender tile */
+    write_bg_tile(bx, by, def_tile, def_pal);
+}

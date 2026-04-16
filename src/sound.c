@@ -196,24 +196,11 @@ static const unsigned char sfx_miss[] = {
     0x01, 0x03, 0x44,
 };
 
-/* STEP: footstep tap (CH4 only, priority 1) */
+/* STEP: quick pop (CH4 only, priority 1) */
 static const unsigned char sfx_step[] = {
-    0x21, 2,
-    /* frame 0: audible tap */
-    0x01, 0x08, 0x61,
-    /* frame 1: quick fade */
-    0x00, 0x03, 0x70,
-};
-
-/* SEARCH: swoosh (CH4 only, priority 2) */
-static const unsigned char sfx_search[] = {
-    0x22, 3,
-    /* frame 0: start */
-    0x01, 0x09, 0x52,
-    /* frame 1: whoosh */
-    0x02, 0x07, 0x42,
-    /* frame 2: fade */
-    0x01, 0x03, 0x50,
+    0x21, 1,
+    /* frame 0: short pop */
+    0x00, 0x06, 0x71,
 };
 
 /* SFX lookup table */
@@ -231,10 +218,9 @@ static const unsigned char * const sfx_table[] = {
     sfx_hit,      /* SFX_HIT      10 */
     sfx_miss,     /* SFX_MISS     11 */
     sfx_step,     /* SFX_STEP     12 */
-    sfx_search,   /* SFX_SEARCH   13 */
 };
 
-#define SFX_COUNT 14
+#define SFX_COUNT 13
 
 /* Song data (in banked ROM) */
 extern const hUGESong_t song_title;
@@ -272,6 +258,9 @@ static const uint8_t song_banks[] = {
 
 static uint8_t vbl_registered = 0;
 
+uint8_t sound_music_enabled = 1;
+uint8_t sound_sfx_enabled = 1;
+
 void sound_init(void) {
     /* Enable audio hardware */
     NR52_REG = 0x80; /* master sound on */
@@ -288,13 +277,21 @@ void sound_init(void) {
 }
 
 void sound_play_sfx(uint8_t sfx_id) {
+    if (!sound_sfx_enabled) return;
     if (sfx_id < SFX_COUNT) {
         CBTFX_init(sfx_table[sfx_id]);
     }
 }
 
+static uint8_t current_track = MUSIC_NONE;
+
 void sound_play_music(uint8_t track_id) {
     uint8_t saved_bank;
+    current_track = track_id;
+    if (!sound_music_enabled) {
+        sound_stop_music();
+        return;
+    }
     if (track_id == MUSIC_NONE || track_id > MUSIC_VICTORY) {
         sound_stop_music();
         return;
@@ -329,4 +326,20 @@ void sound_update(void) {
         hUGE_dosound();
         SWITCH_ROM(saved_bank);
     }
+}
+
+void sound_toggle_music(void) {
+    sound_music_enabled = !sound_music_enabled;
+    if (sound_music_enabled) {
+        /* Resume current track */
+        if (current_track != MUSIC_NONE) {
+            sound_play_music(current_track);
+        }
+    } else {
+        sound_stop_music();
+    }
+}
+
+void sound_toggle_sfx(void) {
+    sound_sfx_enabled = !sound_sfx_enabled;
 }

@@ -4,6 +4,7 @@
 #include "items.h"
 #include "player.h"
 #include "render.h"
+#include "sound.h"
 #include <string.h>
 
 /* ------------------------------------------------------------------ */
@@ -61,6 +62,14 @@ void ui_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal) {
     VBK_REG = 0;
 }
 
+/* Box-drawing tile indices (defined in res/tiles.c at positions 15-20) */
+#define TILE_BOX_TL  15
+#define TILE_BOX_TR  16
+#define TILE_BOX_BL  17
+#define TILE_BOX_BR  18
+#define TILE_BOX_H   19
+#define TILE_BOX_V   20
+
 void ui_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t pal) {
     uint8_t i;
     uint8_t right;
@@ -71,22 +80,22 @@ void ui_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t pal) {
 
     /* Corners */
     VBK_REG = 0;
-    set_bkg_tile_xy(x, y, TILE_CHAR('+'));
-    set_bkg_tile_xy(right, y, TILE_CHAR('+'));
-    set_bkg_tile_xy(x, bottom, TILE_CHAR('+'));
-    set_bkg_tile_xy(right, bottom, TILE_CHAR('+'));
+    set_bkg_tile_xy(x, y, TILE_BOX_TL);
+    set_bkg_tile_xy(right, y, TILE_BOX_TR);
+    set_bkg_tile_xy(x, bottom, TILE_BOX_BL);
+    set_bkg_tile_xy(right, bottom, TILE_BOX_BR);
 
     /* Top and bottom edges */
     for (i = x + 1; i < right; i++) {
-        set_bkg_tile_xy(i, y, TILE_CHAR('-'));
-        set_bkg_tile_xy(i, bottom, TILE_CHAR('-'));
+        set_bkg_tile_xy(i, y, TILE_BOX_H);
+        set_bkg_tile_xy(i, bottom, TILE_BOX_H);
     }
 
     /* Left and right edges + interior fill */
     for (i = y + 1; i < bottom; i++) {
         uint8_t j;
-        set_bkg_tile_xy(x, i, TILE_CHAR('|'));
-        set_bkg_tile_xy(right, i, TILE_CHAR('|'));
+        set_bkg_tile_xy(x, i, TILE_BOX_V);
+        set_bkg_tile_xy(right, i, TILE_BOX_V);
         for (j = x + 1; j < right; j++) {
             set_bkg_tile_xy(j, i, TILE_CHAR(' '));
         }
@@ -323,13 +332,12 @@ static const char *const action_labels[] = {
     "Quaff",
     "Read",
     "Zap",
-    "Search",
+    "Rest",
     "Pick up",
     "Drop",
-    "Wait",
     "Save+Quit"
 };
-#define NUM_ACTIONS 10
+#define NUM_ACTIONS 9
 
 /* Map menu index to ACTION_* id */
 static const uint8_t action_ids[] = {
@@ -338,10 +346,9 @@ static const uint8_t action_ids[] = {
     ACTION_QUAFF,
     ACTION_READ,
     ACTION_ZAP,
-    ACTION_SEARCH,
+    ACTION_WAIT,
     ACTION_PICKUP,
     ACTION_DROP,
-    ACTION_WAIT,
     ACTION_SAVE_QUIT
 };
 
@@ -738,9 +745,11 @@ void ui_character_sheet(void) {
 
 void ui_message_history(void) {
     uint8_t scroll_top;
+    uint8_t prev_scroll;
     uint8_t max_rows;
     uint8_t i;
     uint8_t idx;
+    uint8_t need_draw;
 
     if (msg_count == 0) {
         ui_message("No messages.");
@@ -750,29 +759,36 @@ void ui_message_history(void) {
 
     max_rows = SCREEN_H - 2;  /* rows available inside border */
     scroll_top = 0;
+    prev_scroll = 255;  /* force initial draw */
+    need_draw = 1;
 
     for (;;) {
-        /* Draw border */
-        ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
+        if (need_draw) {
+            /* Draw border */
+            ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
+            ui_draw_text(3, 0, " Messages ", PAL_UI);
 
-        /* Draw messages from newest to oldest */
-        for (i = 0; i < max_rows; i++) {
-            uint8_t msg_idx_offset;
+            /* Draw messages from newest to oldest */
+            for (i = 0; i < max_rows; i++) {
+                uint8_t msg_idx_offset;
 
-            msg_idx_offset = scroll_top + i;
-            if (msg_idx_offset >= msg_count) {
-                break;
+                msg_idx_offset = scroll_top + i;
+                if (msg_idx_offset >= msg_count) {
+                    break;
+                }
+
+                /* Calculate actual index into circular buffer.
+                   Index 0 = most recent message. */
+                if (msg_head >= msg_idx_offset + 1) {
+                    idx = msg_head - msg_idx_offset - 1;
+                } else {
+                    idx = MSG_LOG_SIZE - (msg_idx_offset + 1 - msg_head);
+                }
+
+                ui_draw_text(1, 1 + i, msg_log[idx], PAL_UI);
             }
-
-            /* Calculate actual index into circular buffer.
-               Index 0 = most recent message. */
-            if (msg_head >= msg_idx_offset + 1) {
-                idx = msg_head - msg_idx_offset - 1;
-            } else {
-                idx = MSG_LOG_SIZE - (msg_idx_offset + 1 - msg_head);
-            }
-
-            ui_draw_text(1, 1 + i, msg_log[idx], PAL_UI);
+            need_draw = 0;
+            prev_scroll = scroll_top;
         }
 
         /* Input */
@@ -782,16 +798,18 @@ void ui_message_history(void) {
         if (joy_pressed & J_UP) {
             if (scroll_top > 0) {
                 scroll_top--;
+                need_draw = 1;
             }
         }
 
         if (joy_pressed & J_DOWN) {
             if (scroll_top + max_rows < msg_count) {
                 scroll_top++;
+                need_draw = 1;
             }
         }
 
-        if (joy_pressed & J_B) {
+        if ((joy_pressed & J_B) || (joy_pressed & J_SELECT)) {
             break;
         }
 
@@ -801,6 +819,141 @@ void ui_message_history(void) {
     }
 
     ui_needs_redraw = 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Help screen                                                        */
+/* ------------------------------------------------------------------ */
+
+void ui_help_screen(void) {
+    ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
+    ui_draw_text(5, 0, " Help ", PAL_UI);
+
+    ui_draw_text(1, 1,  "Dpad  Move", PAL_UI);
+    ui_draw_text(1, 2,  "A     Action menu", PAL_UI);
+    ui_draw_text(1, 3,  "B     Get/Rest", PAL_UI);
+    ui_draw_text(1, 4,  "B+Pad Diagonal", PAL_UI);
+    ui_draw_text(1, 5,  "Start Character", PAL_UI);
+    ui_draw_text(1, 6,  "Sel   This menu", PAL_UI);
+    ui_draw_text(1, 8,  "Move to a door", PAL_UI);
+    ui_draw_text(1, 9,  " to open it.", PAL_UI);
+    ui_draw_text(1, 10, "Move to a monster", PAL_UI);
+    ui_draw_text(1, 11, " to attack it.", PAL_UI);
+    ui_draw_text(1, 13, "B with no item", PAL_UI);
+    ui_draw_text(1, 14, " underfoot: rest.", PAL_UI);
+
+    ui_draw_text(3, 16, "Press any key", PAL_UI);
+
+    for (;;) {
+        wait_vbl_done();
+        input_update();
+        if (joy_pressed) {
+            break;
+        }
+    }
+
+    ui_needs_redraw = 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Select menu                                                        */
+/* ------------------------------------------------------------------ */
+
+#define SEL_HELP       0
+#define SEL_MESSAGES   1
+#define SEL_MUSIC      2
+#define SEL_SFX        3
+#define SEL_QUIT       4
+#define SEL_COUNT      5
+
+static void select_menu_draw(uint8_t cursor) {
+    uint8_t i;
+    uint8_t ty;
+    const char *labels[SEL_COUNT];
+
+    labels[0] = "Help";
+    labels[1] = "View Messages";
+    labels[2] = sound_music_enabled ? "Music: ON" : "Music: OFF";
+    labels[3] = sound_sfx_enabled ? "SFX: ON" : "SFX: OFF";
+    labels[4] = "Save+Quit";
+
+    ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
+    ui_draw_text(5, 0, " Menu ", PAL_UI);
+
+    for (i = 0; i < SEL_COUNT; i++) {
+        ty = 2 + i * 2;
+        if (i == cursor) {
+            ui_draw_text(2, ty, ">", PAL_UI);
+        } else {
+            ui_draw_text(2, ty, " ", PAL_UI);
+        }
+        ui_draw_text(3, ty, labels[i], PAL_UI);
+    }
+}
+
+uint8_t ui_select_menu(void) {
+    uint8_t cursor;
+    uint8_t need_draw;
+
+    cursor = 0;
+    need_draw = 1;
+
+    for (;;) {
+        if (need_draw) {
+            select_menu_draw(cursor);
+            need_draw = 0;
+        }
+
+        wait_vbl_done();
+        input_update();
+
+        if (joy_pressed & J_UP) {
+            if (cursor > 0) {
+                cursor--;
+            } else {
+                cursor = SEL_COUNT - 1;
+            }
+            need_draw = 1;
+        }
+
+        if (joy_pressed & J_DOWN) {
+            if (cursor < SEL_COUNT - 1) {
+                cursor++;
+            } else {
+                cursor = 0;
+            }
+            need_draw = 1;
+        }
+
+        if (joy_pressed & J_A) {
+            switch (cursor) {
+            case SEL_HELP:
+                ui_help_screen();
+                ui_needs_redraw = 1;
+                return SEL_HELP;
+            case SEL_MESSAGES:
+                ui_message_history();
+                ui_needs_redraw = 1;
+                return SEL_MESSAGES;
+            case SEL_MUSIC:
+                sound_toggle_music();
+                need_draw = 1;  /* refresh to show new state */
+                break;
+            case SEL_SFX:
+                sound_toggle_sfx();
+                need_draw = 1;
+                break;
+            case SEL_QUIT:
+                ui_needs_redraw = 1;
+                return SEL_QUIT;
+            }
+        }
+
+        if ((joy_pressed & J_B) || (joy_pressed & J_SELECT)) {
+            ui_needs_redraw = 1;
+            return 255;  /* cancelled */
+        }
+    }
 }
 
 /* ------------------------------------------------------------------ */

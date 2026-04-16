@@ -2,6 +2,7 @@
 #include "dungeon.h"
 #include "monsters.h"
 #include "pet.h"
+#include "render.h"
 #include "rng.h"
 #include "sound.h"
 #include "ui.h"
@@ -101,11 +102,8 @@ static void player_attack_monster(uint8_t idx) {
     int8_t target_ac;
     const MonsterType *mt;
 
-    /* Don't attack your own pet */
+    /* Don't attack your own pet — swap positions silently */
     if (idx == pet_index) {
-        ui_message("You swap with your");
-        ui_message("pet.");
-        /* Swap positions instead */
         {
             uint8_t px, py, mx, my, cell;
             px = player.x;
@@ -144,6 +142,9 @@ static void player_attack_monster(uint8_t idx) {
         dmg = 1;
     }
 
+    /* Bump animation: player tile lunges at monster */
+    render_bump_attack(player.x, player.y,
+                       monsters[idx].x, monsters[idx].y);
     sound_play_sfx(SFX_HIT);
 
     /* Show hit message */

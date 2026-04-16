@@ -39,7 +39,6 @@ static void title_screen(void);
 static void new_game(void);
 static void game_loop(void);
 static void handle_action(uint8_t action);
-static void handle_search(void);
 static void death_sequence(void);
 static void win_sequence(void);
 static void descend_stairs(void);
@@ -462,50 +461,6 @@ static void ascend_stairs(void) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Search adjacent tiles                                               */
-/* ------------------------------------------------------------------ */
-
-static void handle_search(void) {
-    int8_t dx, dy;
-    uint8_t nx, ny;
-    uint8_t cell;
-    uint8_t terrain;
-
-    sound_play_sfx(SFX_SEARCH);
-
-    for (dy = -1; dy <= 1; dy++) {
-        for (dx = -1; dx <= 1; dx++) {
-            if (dx == 0 && dy == 0) continue;
-            nx = player.x + dx;
-            ny = player.y + dy;
-            if (nx >= MAP_WIDTH || ny >= MAP_HEIGHT) continue;
-
-            cell = dungeon_get_cell(nx, ny);
-            terrain = CELL_TERRAIN(cell);
-
-            /* Reveal hidden doors (walls adjacent to corridors) */
-            if (terrain == TERRAIN_WALL) {
-                /* 1 in 5 chance to find a secret door */
-                if (rng_range(0, 4) == 0) {
-                    dungeon_set_cell(nx, ny,
-                        (cell & ~TERRAIN_MASK) | TERRAIN_DOOR_CLOSED);
-                    ui_message("A hidden door!");
-                }
-            }
-
-            /* Reveal hidden traps */
-            if (terrain == TERRAIN_FLOOR) {
-                if (rng_range(0, 9) == 0) {
-                    dungeon_set_cell(nx, ny,
-                        (cell & ~TERRAIN_MASK) | TERRAIN_TRAP);
-                    ui_message("A trap!");
-                }
-            }
-        }
-    }
-}
-
-/* ------------------------------------------------------------------ */
 /* Handle action menu result                                           */
 /* ------------------------------------------------------------------ */
 
@@ -548,10 +503,6 @@ static void handle_action(uint8_t action) {
                 inventory_use(slot);
             }
         }
-        break;
-
-    case ACTION_SEARCH:
-        handle_search();
         break;
 
     case ACTION_DROP:
@@ -758,15 +709,11 @@ static void game_loop(void) {
             /* Check directional movement */
             dir = input_get_direction();
             if (dir != DIR_NONE) {
-                uint8_t blocked;
                 dx = dir_dx[dir];
                 dy = dir_dy[dir];
                 prev_x = player.x;
                 prev_y = player.y;
-                blocked = player_move(dx, dy);
-                if (blocked) {
-                    /* Bumped a wall - just waste the input, no turn cost */
-                }
+                player_move(dx, dy);
                 acted = 1;
                 break;
             }
@@ -780,8 +727,9 @@ static void game_loop(void) {
                     inventory_pickup();
                     sound_play_sfx(SFX_PICKUP);
                 } else {
-                    /* Otherwise rest/wait */
-                    ui_message("You wait.");
+                    /* No item — rest */
+                    ui_message("You rest.");
+                    player.turns++;
                 }
                 acted = 1;
                 break;
@@ -810,9 +758,18 @@ static void game_loop(void) {
                 break;
             }
 
-            /* SELECT: message history (free action) */
+            /* SELECT: menu (free action) */
             if (joy_pressed & J_SELECT) {
-                ui_message_history();
+                uint8_t sel_result;
+                sel_result = ui_select_menu();
+                if (sel_result == SEL_MENU_QUIT) {
+                    save_game();
+                    ui_message("Game saved.");
+                    ui_show_messages();
+                    wait_vbl_done();
+                    wait_vbl_done();
+                    reset();
+                }
                 render_full_redraw();
                 break;
             }

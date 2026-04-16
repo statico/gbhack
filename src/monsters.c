@@ -294,6 +294,9 @@ static void monster_attack_player(uint8_t idx) {
     }
 
     if (dmg > 0) {
+        /* Bump animation: monster tile lunges at player */
+        render_bump_attack(monsters[idx].x, monsters[idx].y,
+                           player.x, player.y);
         sound_play_sfx(SFX_ATTACK);
         render_flash_hit();
         player_set_death_cause(monster_name(monsters[idx].type_id));

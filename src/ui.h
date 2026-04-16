@@ -18,7 +18,6 @@ void ui_show_messages(void);          /* Render pending messages */
 #define ACTION_QUAFF     3
 #define ACTION_READ      4
 #define ACTION_ZAP       5
-#define ACTION_SEARCH    6
 #define ACTION_PICKUP    7
 #define ACTION_DROP      8
 #define ACTION_WAIT      9
@@ -37,6 +36,13 @@ void ui_character_sheet(void);
 
 /* Message history */
 void ui_message_history(void);
+
+/* Help screen */
+void ui_help_screen(void);
+
+/* Select menu — returns action taken (255 = cancelled) */
+#define SEL_MENU_QUIT 4
+uint8_t ui_select_menu(void);
 
 /* Yes/No prompt */
 uint8_t ui_yes_no(const char *question);  /* returns 1 for yes, 0 for no */
