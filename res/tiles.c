@@ -1213,34 +1213,34 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     // 2bpp encoding: Color 0 = bg, Color 2 = body fill, Color 3 = outline
     // ================================================================
 
-    // Tile 128: Dagger — diagonal blade with crossguard
+    // Tile 128: Dagger — short straight blade
     0x00,0x00,  // ........
-    0x02,0x03,  // ......*=  (blade tip)
-    0x02,0x06,  // .....=*.  (blade edge)
-    0x08,0x0C,  // ....*=..  (blade body)
-    0x10,0x18,  // ...*=...  (blade base)
-    0x24,0x3C,  // ..*==*..  (crossguard)
-    0x00,0x18,  // ...==...  (handle)
+    0x18,0x18,  // ...**...  (blade tip)
+    0x10,0x18,  // ...*=...  (blade)
+    0x10,0x18,  // ...*=...  (blade)
+    0x38,0x38,  // ..***...  (crossguard)
+    0x10,0x10,  // ...*....  (handle)
     0x00,0x00,  // ........
-
-    // Tile 129: Short sword — vertical blade
-    0x00,0x00,  // ........
-    0x08,0x18,  // ...=*...  (blade tip)
-    0x08,0x18,  // ...=*...  (blade)
-    0x08,0x18,  // ...=*...  (blade)
-    0x24,0x3C,  // ..*==*..  (crossguard)
-    0x00,0x18,  // ...==...  (grip)
-    0x00,0x18,  // ...==...  (pommel)
     0x00,0x00,  // ........
 
-    // Tile 130: Long sword — tall blade with pommel
-    0x08,0x08,  // ....*...  (blade tip)
-    0x08,0x18,  // ...=*...  (blade)
-    0x08,0x18,  // ...=*...  (blade)
-    0x08,0x18,  // ...=*...  (blade)
-    0x24,0x3C,  // ..*==*..  (crossguard)
-    0x00,0x18,  // ...==...  (grip)
-    0x24,0x3C,  // ..*==*..  (pommel)
+    // Tile 129: Short sword — straight blade
+    0x18,0x18,  // ...**...  (blade tip)
+    0x10,0x18,  // ...*=...  (blade)
+    0x10,0x18,  // ...*=...  (blade)
+    0x10,0x18,  // ...*=...  (blade)
+    0x38,0x38,  // ..***...  (crossguard)
+    0x10,0x10,  // ...*....  (handle)
+    0x10,0x10,  // ...*....  (handle)
+    0x00,0x00,  // ........
+
+    // Tile 130: Long sword — straight with wide guard
+    0x18,0x18,  // ...**...  (blade tip)
+    0x10,0x18,  // ...*=...  (blade)
+    0x10,0x18,  // ...*=...  (blade)
+    0x10,0x18,  // ...*=...  (blade)
+    0x44,0x7C,  // .*===*..  (wide crossguard)
+    0x10,0x10,  // ...*....  (grip)
+    0x18,0x18,  // ...**...  (pommel)
     0x00,0x00,  // ........
 
     // Tile 131: Mace — heavy spiked head on shaft
@@ -1253,14 +1253,14 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x08,0x18,  // ...=*...  (shaft)
     0x00,0x00,  // ........
 
-    // Tile 132: Bow — curved arc
+    // Tile 132: Bow — with bowstring
     0x00,0x00,  // ........
-    0x08,0x0C,  // ....*=..  (top nock)
-    0x10,0x30,  // ..=*....  (upper limb)
-    0x40,0x60,  // .*=.....  (mid limb)
-    0x40,0x60,  // .*=.....  (mid limb)
-    0x10,0x30,  // ..=*....  (lower limb)
-    0x08,0x0C,  // ....*=..  (bottom nock)
+    0x14,0x1C,  // ...*=*..  (nock + string)
+    0x24,0x34,  // ..*=.*..  (upper limb + string)
+    0x44,0x64,  // .*=..*..  (mid limb + string)
+    0x44,0x64,  // .*=..*..  (mid limb + string)
+    0x24,0x34,  // ..*=.*..  (lower limb + string)
+    0x14,0x1C,  // ...*=*..  (nock + string)
     0x00,0x00,  // ........
 
     // Tile 133: Arrow — diagonal with arrowhead
@@ -1303,195 +1303,76 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x24,0x3C,  // ..*==*..  (hem)
     0x00,0x00,  // ........
 
-    // Tile 137: Shield — round with center boss
+    // Tile 137: Shield — pointed kite shield
     0x00,0x00,  // ........
-    0x24,0x3C,  // ..*==*..  (top)
+    0x42,0x7E,  // .*====*.  (flat top)
     0x42,0x7E,  // .*====*.  (upper)
-    0x5A,0x7E,  // .*=**=*.  (boss detail)
-    0x5A,0x7E,  // .*=**=*.  (boss)
-    0x42,0x7E,  // .*====*.  (lower)
-    0x24,0x3C,  // ..*==*..  (bottom)
+    0x5A,0x7E,  // .*=**=*.  (cross emblem)
+    0x42,0x7E,  // .*====*.  (body)
+    0x24,0x3C,  // ..*==*..  (narrowing)
+    0x18,0x18,  // ...**...  (point!)
     0x00,0x00,  // ........
 
-    // Tile 138: Helmet — dome with crest
+    // Tile 138: Helmet — dome with brim and face opening
     0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (crest)
+    0x18,0x18,  // ...**...  (plume)
     0x24,0x3C,  // ..*==*..  (dome top)
     0x42,0x7E,  // .*====*.  (dome)
-    0x42,0x7E,  // .*====*.  (brim)
-    0x00,0x00,  // ........
-    0x00,0x00,  // ........
-    0x00,0x00,  // ........
-
-    // Tile 139: Potion 1 — round flask
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (stopper)
-    0x00,0x18,  // ...==...  (neck)
-    0x24,0x3C,  // ..*==*..  (shoulder)
-    0x42,0x7E,  // .*====*.  (body)
-    0x42,0x7E,  // .*====*.  (body)
-    0x24,0x3C,  // ..*==*..  (base)
+    0x42,0x7E,  // .*====*.  (dome)
+    0x81,0xFF,  // *======*  (wide brim!)
+    0x20,0x24,  // ..*..=..  (face opening)
     0x00,0x00,  // ........
 
-    // Tile 140: Potion 2 — tall bottle
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (cork)
-    0x08,0x18,  // ...=*...  (narrow neck)
-    0x08,0x18,  // ...=*...  (neck)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (base)
-    0x00,0x00,  // ........
+    // Tiles 139-144: Potion — round flask (all identical, differentiated by palette)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
+    // Tile 140: Potion (same)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
+    // Tile 141: Potion (same)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
+    // Tile 142: Potion (same)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
+    // Tile 143: Potion (same)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
+    // Tile 144: Potion (same)
+    0x00,0x00, 0x18,0x18, 0x18,0x18, 0x24,0x3C, 0x42,0x7E, 0x42,0x7E, 0x24,0x3C, 0x00,0x00,
 
-    // Tile 141: Potion 3 — wide flask
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (cork)
-    0x10,0x18,  // ...*=...  (neck)
-    0x42,0x7E,  // .*====*.  (wide body)
-    0x42,0x7E,  // .*====*.  (wide body)
-    0x42,0x7E,  // .*====*.  (wide body)
-    0x24,0x3C,  // ..*==*..  (base)
-    0x00,0x00,  // ........
+    // Tiles 145-150: Scroll — two rolls with parchment sheet between (NetHack style)
+    0x3C,0x00,  // ..----..  (top roll highlight, cylinder shading)
+    0x42,0x7E,  // .*====*.  (top roll body)
+    0x3E,0x3E,  // ..*****.  (sheet top edge)
+    0x2C,0x18,  // ..-=*-..  (sheet + text mark)
+    0x34,0x18,  // ..-*=-..  (sheet + text mark)
+    0x3E,0x3E,  // ..*****.  (sheet bottom edge)
+    0x42,0x7E,  // .*====*.  (bottom roll body)
+    0x3C,0x00,  // ..----..  (bottom roll highlight)
+    // Tile 146: Scroll (same)
+    0x3C,0x00, 0x42,0x7E, 0x3E,0x3E, 0x2C,0x18, 0x34,0x18, 0x3E,0x3E, 0x42,0x7E, 0x3C,0x00,
+    // Tile 147: Scroll (same)
+    0x3C,0x00, 0x42,0x7E, 0x3E,0x3E, 0x2C,0x18, 0x34,0x18, 0x3E,0x3E, 0x42,0x7E, 0x3C,0x00,
+    // Tile 148: Scroll (same)
+    0x3C,0x00, 0x42,0x7E, 0x3E,0x3E, 0x2C,0x18, 0x34,0x18, 0x3E,0x3E, 0x42,0x7E, 0x3C,0x00,
+    // Tile 149: Scroll (same)
+    0x3C,0x00, 0x42,0x7E, 0x3E,0x3E, 0x2C,0x18, 0x34,0x18, 0x3E,0x3E, 0x42,0x7E, 0x3C,0x00,
+    // Tile 150: Scroll (same)
+    0x3C,0x00, 0x42,0x7E, 0x3E,0x3E, 0x2C,0x18, 0x34,0x18, 0x3E,0x3E, 0x42,0x7E, 0x3C,0x00,
 
-    // Tile 142: Potion 4 — diamond flask
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (cork)
-    0x10,0x18,  // ...*=...  (neck)
-    0x24,0x3C,  // ..*==*..  (upper)
-    0x42,0x7E,  // .*====*.  (widest)
-    0x24,0x3C,  // ..*==*..  (lower)
-    0x00,0x18,  // ...==...  (narrow base)
-    0x00,0x00,  // ........
-
-    // Tile 143: Potion 5 — triangular flask
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (cork)
-    0x08,0x18,  // ...=*...  (narrow neck)
-    0x08,0x18,  // ...=*...  (neck)
-    0x24,0x3C,  // ..*==*..  (shoulder)
-    0x42,0x7E,  // .*====*.  (wide body)
-    0x42,0x7E,  // .*====*.  (wide base)
-    0x00,0x00,  // ........
-
-    // Tile 144: Potion 6 — sphere with liquid mark
-    0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (stopper)
-    0x24,0x3C,  // ..*==*..  (top)
-    0x42,0x7E,  // .*====*.  (body)
-    0x5A,0x7E,  // .*=**=*.  (liquid level)
-    0x42,0x7E,  // .*====*.  (body)
-    0x24,0x3C,  // ..*==*..  (bottom)
-    0x00,0x00,  // ........
-
-    // Tile 145: Scroll 1 — rolled scroll with edges
-    0x00,0x00,  // ........
-    0x24,0x3C,  // ..*==*..  (top roller)
-    0x5A,0x7E,  // .*=**=*.  (rolled edge)
-    0x42,0x66,  // .*=..=*.  (parchment)
-    0x42,0x66,  // .*=..=*.  (parchment)
-    0x5A,0x7E,  // .*=**=*.  (rolled edge)
-    0x24,0x3C,  // ..*==*..  (bottom roller)
-    0x00,0x00,  // ........
-
-    // Tile 146: Scroll 2 — unfurled page
-    0x00,0x00,  // ........
-    0x42,0x7E,  // .*====*.  (top edge)
-    0x42,0x66,  // .*=..=*.  (writing)
-    0x42,0x7E,  // .*====*.  (text line)
-    0x42,0x66,  // .*=..=*.  (writing)
-    0x42,0x66,  // .*=..=*.  (writing)
-    0x42,0x7E,  // .*====*.  (bottom)
-    0x00,0x00,  // ........
-
-    // Tile 147: Scroll 3 — sealed with wax
-    0x00,0x00,  // ........
-    0x24,0x3C,  // ..*==*..  (roller top)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x3C,0x3C,  // ..****..  (wax seal, bright)
-    0x24,0x3C,  // ..*==*..  (roller bottom)
-    0x00,0x00,  // ........
-
-    // Tile 148: Scroll 4 — torn page
-    0x00,0x00,  // ........
-    0x2C,0x3C,  // ..*=**..  (ragged top)
-    0x40,0x7C,  // .*====..  (asymmetric body)
-    0x42,0x7E,  // .*====*.  (body)
-    0x44,0x7C,  // .*===*..  (narrowing)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x10,0x18,  // ...*=...  (torn bottom)
-    0x00,0x00,  // ........
-
-    // Tile 149: Scroll 5 — small note
-    0x00,0x00,  // ........
-    0x00,0x00,  // ........
-    0x24,0x3C,  // ..*==*..  (top)
-    0x20,0x34,  // ..*=.=..  (text)
-    0x24,0x3C,  // ..*==*..  (line)
-    0x20,0x34,  // ..*=.=..  (text)
-    0x24,0x3C,  // ..*==*..  (bottom)
-    0x00,0x00,  // ........
-
-    // Tile 150: Scroll 6 — scroll with ribbon
-    0x00,0x00,  // ........
-    0x38,0x38,  // ..***...  (ribbon bow)
-    0x24,0x3C,  // ..*==*..  (roller)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x24,0x3C,  // ..*==*..  (roller bottom)
-    0x00,0x00,  // ........
-
-    // Tile 151: Wand 1 — sparkle tip
-    0x08,0x08,  // ....*...  (sparkle)
-    0x14,0x14,  // ...*.*..  (sparkle arms)
-    0x08,0x08,  // ....*...  (sparkle)
-    0x04,0x0C,  // ....=*..  (shaft)
-    0x02,0x06,  // .....=*.  (shaft)
-    0x02,0x06,  // .....=*.  (shaft)
-    0x01,0x03,  // ......=*  (handle)
-    0x00,0x00,  // ........
-
-    // Tile 152: Wand 2 — crystal tipped
-    0x00,0x00,  // ........
-    0x06,0x06,  // .....**.  (crystal tip)
-    0x04,0x0C,  // ....=*..  (crystal base)
-    0x08,0x08,  // ....*...  (shaft)
+    // Tiles 151-155: Wand — centered orb + straight shaft (all identical, palette-colored)
+    0x18,0x18,  // ...**...  (orb top, centered)
+    0x24,0x3C,  // ..*==*..  (orb body, outlined)
+    0x18,0x18,  // ...**...  (orb bottom)
     0x10,0x10,  // ...*....  (shaft)
-    0x10,0x30,  // ..=*....  (shaft, shaded)
-    0x40,0x60,  // .*=.....  (handle)
-    0x00,0x00,  // ........
-
-    // Tile 153: Wand 3 — gnarled with knot
-    0x00,0x00,  // ........
-    0x02,0x06,  // .....=*.  (tip)
-    0x04,0x0C,  // ....=*..  (shaft)
-    0x08,0x08,  // ....*...  (shaft)
-    0x10,0x18,  // ...*=...  (thickening)
-    0x10,0x38,  // ..=*=...  (knot)
-    0x60,0x70,  // .**=....  (thick base)
-    0x00,0x00,  // ........
-
-    // Tile 154: Wand 4 — straight simple
-    0x00,0x00,  // ........
-    0x02,0x06,  // .....=*.  (tip)
-    0x04,0x04,  // .....*..  (shaft)
-    0x08,0x08,  // ....*...  (shaft)
     0x10,0x10,  // ...*....  (shaft)
-    0x10,0x30,  // ..=*....  (shaft, shaded)
-    0x40,0x60,  // .*=.....  (handle)
-    0x00,0x00,  // ........
-
-    // Tile 155: Wand 5 — ringed/banded
-    0x00,0x00,  // ........
-    0x02,0x06,  // .....=*.  (tip)
-    0x04,0x04,  // .....*..  (shaft)
-    0x0C,0x0C,  // ....**.  (ring, bright)
     0x10,0x10,  // ...*....  (shaft)
-    0x18,0x18,  // ...**...  (ring, bright)
-    0x40,0x60,  // .*=.....  (handle)
+    0x10,0x10,  // ...*....  (handle)
     0x00,0x00,  // ........
+    // Tile 152: Wand (same)
+    0x18,0x18, 0x24,0x3C, 0x18,0x18, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x00,0x00,
+    // Tile 153: Wand (same)
+    0x18,0x18, 0x24,0x3C, 0x18,0x18, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x00,0x00,
+    // Tile 154: Wand (same)
+    0x18,0x18, 0x24,0x3C, 0x18,0x18, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x00,0x00,
+    // Tile 155: Wand (same)
+    0x18,0x18, 0x24,0x3C, 0x18,0x18, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x10,0x10, 0x00,0x00,
 
     // Tile 156: Food 1 — bread ration
     0x00,0x00,  // ........
@@ -1573,15 +1454,15 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x24,0x3C,  // ..*==*..  (amulet bottom)
     0x00,0x00,  // ........
 
-    // Tile 164: Sack (item 36)
+    // Tile 164: Sack — drawstring bag (NetHack style)
     0x00,0x00,  // ........
-    0x18,0x18,  // ...**...  (drawstring)
-    0x24,0x3C,  // ..*==*..  (neck)
-    0x42,0x7E,  // .*====*.  (body)
-    0x42,0x7E,  // .*====*.  (body)
-    0x42,0x7E,  // .*====*.  (body)
-    0x24,0x3C,  // ..*==*..  (bottom)
-    0x00,0x00,  // ........
+    0x18,0x18,  // ...**...  (gathered top)
+    0x2C,0x14,  // ..-=-*..  (drawstring/cord)
+    0x44,0x3C,  // .-===*..  (body widens, lit left)
+    0x42,0x3E,  // .-====*.  (body, highlight left)
+    0x42,0x3E,  // .-====*.  (body)
+    0x04,0x3C,  // ..===*..  (body narrows)
+    0x3C,0x3C,  // ..****..  (bottom outline)
 
     // Tile 165: Lamp (item 37) — oil lamp
     0x00,0x00,  // ........
@@ -1603,14 +1484,14 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x42,0x7E,  // .*====*.  (bell)
     0x00,0x00,  // ........
 
-    // Tile 167: Whistle (item 39)
+    // Tile 167: Whistle (item 39) — with lanyard ring
     0x00,0x00,  // ........
-    0x00,0x00,  // ........
+    0x3C,0x3C,  // ..****..  (lanyard loop)
+    0x24,0x24,  // ..*..=..  (loop open)
+    0x3C,0x3C,  // ..****..  (loop closed)
     0x18,0x18,  // ...**...  (mouthpiece)
     0x42,0x7E,  // .*====*.  (body)
-    0x42,0x7E,  // .*====*.  (body)
-    0x24,0x3C,  // ..*==*..  (tapered end)
-    0x00,0x00,  // ........
+    0x24,0x3C,  // ..*==*..  (bell end)
     0x00,0x00,  // ........
 
     // ================================================================
@@ -1699,42 +1580,42 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     // Color 0 = background/eyes (darkest), Color 1 = shadow (dark)
     // Color 2 = body fill (medium),        Color 3 = outline/highlight (bright)
 
-    // Tile 192: Newt — small lizard
+    // Tile 192: Newt — horizontal lizard, head right, legs + tail
     0x00,0x00,  // ........
-    0x00,0x00,  // ........
-    0x20,0x20,  // ..*.....  (eye highlight)
-    0x48,0x78,  // .*==*...  (head outline, body fill)
-    0x24,0x3C,  // ..*==*..  (body outlined)
-    0x14,0x1C,  // ...*=*..  (tail, bright tip)
-    0x0A,0x0A,  // ....*.*.  (legs)
+    0x03,0x01,  // ......-*  (eye highlight + head tip)
+    0x05,0x07,  // .....*=*  (head)
+    0x19,0x1F,  // ...**==*  (neck widens)
+    0x62,0x7E,  // .**===*.  (body, full width)
+    0xC0,0xE4,  // **=..=..  (tail + upper legs)
+    0x24,0x24,  // ..*..=..  (feet)
     0x00,0x00,  // ........
 
-    // Tile 193: Jackal — canine
+    // Tile 193: Jackal — dog with floppy ear
     0x00,0x00,  // ........
-    0xA0,0xA0,  // *.*.....  (pointed ears)
-    0x70,0x70,  // .***....  (head)
-    0x48,0x58,  // .*.*=...  (face with eye socket)
-    0x64,0x7C,  // .**==*..  (body outlined)
+    0x10,0x30,  // ..=*....  (floppy ear)
+    0x48,0x78,  // .*==*...  (head)
+    0x40,0x60,  // .*=.....  (snout)
+    0x20,0x3C,  // ..*===..  (body)
     0x24,0x3C,  // ..*==*..  (haunches)
-    0x24,0x24,  // ..*..=..  (legs)
+    0x20,0x24,  // ..*..=..  (legs)
     0x00,0x00,  // ........
 
-    // Tile 194: Bat — wings spread
-    0x5A,0x5A,  // .*.**.*.  (wing tips)
-    0x99,0x99,  // *..**..*  (wing edges)
-    0xE7,0xFF,  // ***==***  (full span, body fill center)
-    0x42,0x7E,  // .*====*.  (body outlined)
-    0x24,0x3C,  // ..*==*..  (abdomen)
+    // Tile 194: Bat — compact with angular wings
+    0x00,0x00,  // ........
+    0x44,0x44,  // .*...*..  (ear points)
+    0xEE,0xEE,  // ***.***.  (wings spread wide)
+    0x42,0x7E,  // .*====*.  (body)
+    0x24,0x3C,  // ..*==*..  (lower body)
     0x18,0x18,  // ...**...  (narrow)
-    0x1A,0x1A,  // ...**.*. (tail)
-    0x0C,0x0C,  // ....**.  (feet)
+    0x24,0x24,  // ..*..=..  (feet hanging)
+    0x00,0x00,  // ........
 
-    // Tile 195: Kobold — reptilian humanoid
-    0x38,0x38,  // ..***...  (wider head)
-    0x28,0x28,  // ..*.*...  (face with eye/nose gap)
+    // Tile 195: Kobold — reptilian with crest and tail
+    0x58,0x78,  // .*=**...  (pointy head crest!)
+    0x28,0x28,  // ..*.*...  (face with eye gap)
     0x24,0x3C,  // ..*==*..  (shoulders)
-    0x42,0x7E,  // .*====*.  (torso outlined)
-    0x24,0x3C,  // ..*==*..  (waist)
+    0x42,0x7E,  // .*====*.  (torso)
+    0x26,0x3E,  // ..*==**.  (waist + tail!)
     0x24,0x3C,  // ..*==*..  (legs)
     0x24,0x24,  // ..*..=..  (feet)
     0x00,0x00,  // ........
@@ -1829,15 +1710,15 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x18,0x18,  // ...**...  (tail)
     0x24,0x24,  // ..*..=..  (feet)
 
-    // Tile 205: Nymph — flowing hair, graceful
+    // Tile 205: Nymph — flowing hair, graceful dress
     0x1C,0x1C,  // ...***..  (hair flowing right)
-    0x18,0x18,  // ...**...  (head)
-    0x42,0x7E,  // .*====*.  (dress top, wide)
-    0xA5,0xBD,  // *.=**=.*  (arms)
-    0x42,0x7E,  // .*====*.  (dress middle)
-    0x24,0x3C,  // ..*==*..  (dress)
-    0x24,0x24,  // ..*..=..  (legs)
-    0x24,0x24,  // ..*..=..  (feet)
+    0x18,0x38,  // ..=**...  (head with hair shading)
+    0x24,0x3C,  // ..*==*..  (slim shoulders)
+    0x24,0x3C,  // ..*==*..  (slim waist)
+    0x42,0x7E,  // .*====*.  (dress flares)
+    0x81,0xFF,  // *======*  (dress widest!)
+    0x42,0x42,  // .*....*. (hem flowing)
+    0x00,0x00,  // ........
 
     // Tile 206: Mimic — chest with shaded interior
     0xFF,0xFF,  // ********  (lid top)
@@ -1869,24 +1750,24 @@ const unsigned char tileset_data[TILE_COUNT * 16] = {
     0x24,0x24,  // ..*..=.. (legs)
     0x24,0x24,  // ..*..=.. (feet)
 
-    // Tile 209: Wraith — ghostly, tattered
-    0x81,0x81,  // *......*  (hood points)
-    0x42,0x7E,  // .*====*.  (hood, body fill)
-    0x18,0x18,  // ...**...  (glowing face)
-    0x18,0x18,  // ...**...  (neck)
-    0x42,0x42,  // .*....*. (cloak)
-    0xA5,0x81,  // *.-..-.*  (tattered, shadow bits)
-    0xA5,0xBD,  // *.=**=.*  (flowing, outlined)
-    0x24,0x24,  // ..*..=..  (wisps)
+    // Tile 209: Wraith — original bat shape (wide wings)
+    0x5A,0x5A,  // .*.**.*.  (wing tips)
+    0x99,0x99,  // *..**..*  (wing edges)
+    0xE7,0xFF,  // ***==***  (full span, body fill center)
+    0x42,0x7E,  // .*====*.  (body outlined)
+    0x24,0x3C,  // ..*==*..  (abdomen)
+    0x18,0x18,  // ...**...  (narrow)
+    0x1A,0x1A,  // ...**.*. (tail)
+    0x0C,0x0C,  // ....**.  (feet)
 
-    // Tile 210: Cockatrice — chicken-lizard, eye detail
-    0x00,0x00,  // ........
-    0x30,0x30,  // ..**..... (crest, bright)
-    0x48,0x58,  // .*.*=...  (head with eye socket)
-    0x24,0x3C,  // ..*==*..  (neck outlined)
-    0x24,0x3C,  // ..*==*..  (body)
-    0x42,0x7E,  // .*====*.  (tail fan, outlined)
-    0x24,0x24,  // ..*..=..  (legs)
+    // Tile 210: Cockatrice — big crest, bird body, fan tail
+    0x38,0x38,  // ..***...  (big crest!)
+    0x30,0x30,  // ..**....  (crest/head)
+    0x48,0x58,  // .*.*=...  (eye + beak)
+    0x24,0x3C,  // ..*==*..  (neck)
+    0x42,0x7E,  // .*====*.  (plump body)
+    0x5A,0x7E,  // .*=**=*.  (feather detail)
+    0x66,0x66,  // .**..**.  (fan tail!)
     0x00,0x00,  // ........
 
     // Tile 211: Troll — hunched brute, no gap

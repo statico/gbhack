@@ -22,7 +22,7 @@ MUS_FILES  = $(wildcard src/music/*.c)
 RES_FILES  = $(wildcard res/*.c)
 LIB_FILES  = $(wildcard lib/cbtfx.c)
 
-SRC_OBJS  = $(patsubst src/%.c,obj/%.o,$(SRC_FILES))
+SRC_OBJS  = $(patsubst src/%.c,obj/%.o,$(filter-out src/tile_viewer.c,$(SRC_FILES)))
 MUS_OBJS  = $(patsubst src/music/%.c,obj/music_%.o,$(MUS_FILES))
 RES_OBJS  = $(patsubst res/%.c,obj/res_%.o,$(RES_FILES))
 LIB_OBJS  = $(patsubst lib/%.c,obj/lib_%.o,$(LIB_FILES))
@@ -128,7 +128,23 @@ $(BINS): $(OBJS) obj/save_data.o
 run: $(BINS)
 	open -a SameBoy $(BINS)
 
+# --- Tile Viewer ---
+VIEWER_BIN = build/tile_viewer.gbc
+VIEWER_LCCFLAGS  = -Wa-l -Wl-m -Wl-j -Wm-yS -Wm-yC
+VIEWER_LCCFLAGS += -Wm-yt0x1B -Wm-ya1 -Wm-yo4
+VIEWER_LCCFLAGS += -Wm-yn"TILEVIEW"
+
+viewer: $(VIEWER_BIN)
+
+obj/tile_viewer.o: src/tile_viewer.c
+	@mkdir -p obj
+	$(LCC) $(VIEWER_LCCFLAGS) -c -o $@ $<
+
+$(VIEWER_BIN): obj/tile_viewer.o obj/res_tiles.o
+	@mkdir -p build
+	$(LCC) $(VIEWER_LCCFLAGS) -o $@ $^
+
 clean:
 	rm -rf obj/ build/
 
-.PHONY: all run clean
+.PHONY: all run viewer clean
