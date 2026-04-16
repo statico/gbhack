@@ -172,7 +172,7 @@ static void intro_screen(void) {
     VBK_REG = 0;
 
     /* Draw centered credits text */
-    set_bkg_tile_xy(9, 2, TILE_INTRO_SWORD);
+    set_bkg_tile_xy(10, 2, TILE_INTRO_SWORD);
 
     ui_draw_text(4, 4, "GBHack v1.0.0", 0);
 
