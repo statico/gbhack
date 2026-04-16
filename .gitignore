@@ -18,10 +18,12 @@ obj/
 
 # Debug/test artifacts
 screenshot*.png
-diana_test.txt
+*_test.txt
 test_output.txt
 
 # System/tools
 .DS_Store
 gbdk/
 .superpowers/
+.claude/
+.playwright-mcp/
