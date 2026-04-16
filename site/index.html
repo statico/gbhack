@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GBHack: Dungeons of Doom</title>
+  <meta name="description" content="A roguelike dungeon crawler for the Game Boy Color, inspired by NetHack. Play in your browser or download the ROM.">
+  <meta property="og:title" content="GBHack: Dungeons of Doom">
+  <meta property="og:description" content="A roguelike dungeon crawler for the Game Boy Color, inspired by NetHack. Play in your browser or download the ROM.">
+  <meta property="og:image" content="/hero.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0d1a;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: #9bbc0f; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 48px 0 32px;
+    }
+
+    .hero-image {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 8px;
+      image-rendering: pixelated;
+      border: 2px solid #2a2a3e;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      color: #fff;
+      margin: 24px 0 8px;
+    }
+
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: #8888aa;
+      max-width: 540px;
+      margin: 0 auto 24px;
+    }
+
+    .hero .badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-gbc { background: #1a2e1a; color: #9bbc0f; border: 1px solid #2a4a2a; }
+    .badge-roguelike { background: #2e1a1a; color: #bc4a0f; border: 1px solid #4a2a2a; }
+    .badge-claude { background: #1a1a2e; color: #6b8afd; border: 1px solid #2a2a4a; }
+
+    /* Emulator */
+    .emulator-section {
+      padding: 32px 0;
+    }
+
+    .emulator-section h2 {
+      text-align: center;
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .emulator-wrapper {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      aspect-ratio: 640 / 576;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #2a2a3e;
+    }
+
+    .emulator-hint {
+      text-align: center;
+      color: #6666888;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .controls-table {
+      max-width: 420px;
+      margin: 16px auto 0;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .controls-table th,
+    .controls-table td {
+      padding: 4px 12px;
+      text-align: left;
+    }
+
+    .controls-table th { color: #9bbc0f; }
+    .controls-table td:first-child { font-family: monospace; color: #aaa; }
+
+    /* Download */
+    .download-section {
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #9bbc0f;
+      color: #0d0d1a;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover {
+      background: #b5d630;
+      text-decoration: none;
+    }
+
+    .download-meta {
+      color: #666;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    /* Features */
+    .features {
+      padding: 32px 0;
+    }
+
+    .features h2 {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: #14142a;
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .feature-card h3 {
+      color: #9bbc0f;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: #999;
+    }
+
+    /* Credits */
+    .credits {
+      padding: 40px 0;
+      border-top: 1px solid #1a1a2e;
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .credits p { margin-bottom: 6px; }
+    .credits .made-with { color: #888; margin-top: 16px; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero { padding: 32px 0 24px; }
+      .hero h1 { font-size: 1.5rem; }
+      .hero .subtitle { font-size: 1rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <section class="hero">
+    <img src="hero.jpg" alt="GBHack: Dungeons of Doom title screen" class="hero-image">
+    <h1>GBHack: Dungeons of Doom</h1>
+    <p class="subtitle">A roguelike dungeon crawler for the Game Boy Color, inspired by NetHack. Procedural dungeons, permadeath, unidentified items, pets, shops, and the Amulet of Yendor.</p>
+    <div class="badges">
+      <span class="badge badge-gbc">Game Boy Color</span>
+      <span class="badge badge-roguelike">Roguelike</span>
+      <span class="badge badge-claude">Built with Claude Code</span>
+    </div>
+  </section>
+
+  <!-- Emulator -->
+  <section class="emulator-section">
+    <h2>Play in Your Browser</h2>
+    <div class="emulator-wrapper">
+      <div id="game" style="width:100%;height:100%"></div>
+    </div>
+    <p class="emulator-hint">Use your keyboard to play. Touch controls available on mobile.</p>
+    <table class="controls-table">
+      <tr><th>Keyboard</th><th>Game Boy</th><th>Action</th></tr>
+      <tr><td>Arrow keys</td><td>D-pad</td><td>Move</td></tr>
+      <tr><td>Z</td><td>A</td><td>Action menu</td></tr>
+      <tr><td>X</td><td>B</td><td>Context / diagonals</td></tr>
+      <tr><td>Enter</td><td>Start</td><td>Character sheet</td></tr>
+      <tr><td>Shift</td><td>Select</td><td>System menu</td></tr>
+    </table>
+  </section>
+
+  <!-- Download -->
+  <section class="download-section">
+    <a href="gbhack.gbc" download class="download-btn">Download ROM</a>
+    <p class="download-meta">gbhack.gbc &middot; 256 KB &middot; Game Boy Color &middot; Works on any GBC emulator or flash cart</p>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <h2>Features</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h3>Procedural Dungeons</h3>
+        <p>15 levels of randomly generated rooms, corridors, traps, fountains, altars, and shops. No two runs are alike.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Classic Roguelike</h3>
+        <p>Permadeath, unidentified items, hunger system, BUC status, and bones files. The full NetHack experience on a Game Boy.</p>
+      </div>
+      <div class="feature-card">
+        <h3>8 Monster Types</h3>
+        <p>Distinct AI behaviors and special abilities: poison, paralysis, teleportation, theft, drain, and petrification.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Pet Companion</h3>
+        <p>Start with a loyal cat or dog. Feed them, keep them loyal, or watch them go feral.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Shops &amp; Economy</h3>
+        <p>Buy and sell items from shopkeepers. Try to steal and face the consequences.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Original Soundtrack</h3>
+        <p>Six music tracks and 13 sound effects composed for the Game Boy's hardware sound chip.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Credits -->
+  <section class="credits">
+    <p>Code by <a href="https://github.com/statico">@statico</a> and <a href="https://claude.ai/code">Claude Code</a></p>
+    <p>Music by <a href="https://www.beatscribe.com/">Beatscribe</a> and Yoki (<a href="https://trominal.itch.io/">Trominal</a>)</p>
+    <p>Art by <a href="https://kenney.nl/">Kenney</a> (CC0) &middot; Inspired by <a href="https://nethack.org/">NetHack</a></p>
+    <p>Built with <a href="https://github.com/gbdk-2020/gbdk-2020">GBDK</a>, <a href="https://github.com/SuperDisk/hUGEDriver">hUGEDriver</a>, and <a href="https://github.com/datmobiledev/cbtfx">CBT-FX</a></p>
+    <p class="made-with">
+      <a href="https://github.com/statico/gbhack">Source on GitHub</a>
+    </p>
+  </section>
+
+</div>
+
+<!-- EmulatorJS -->
+<script type="text/javascript">
+  EJS_player = '#game';
+  EJS_core = 'gambatte';
+  EJS_gameUrl = 'gbhack.gbc';
+  EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+  EJS_color = '#1a1a2e';
+</script>
+<script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
+
+</body>
+</html>

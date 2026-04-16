@@ -27,3 +27,4 @@ gbdk/
 .superpowers/
 .claude/
 .playwright-mcp/
+!site/gbhack.gbc
