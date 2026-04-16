@@ -72,7 +72,6 @@ static void title_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal) 
 }
 
 static void title_screen(void) {
-    uint16_t hiscore;
     uint8_t saved_bank;
     uint8_t x, y;
 
@@ -135,52 +134,39 @@ static void title_screen(void) {
     sound_init();
     sound_play_music(MUSIC_TITLE);
 
-    /* Draw text overlay on bottom rows.
-     * Use image palette 7 for all text (dark bg, light fg).
-     * Palette 0 has a gold tone for the title. */
-    title_draw_text(7, 12, "GBHACK", 0);
-    title_draw_text(3, 13, "NetHack Tribute", 7);
-    title_draw_text(6, 15, "- PLAY -", 0);
-    title_draw_text(5, 16, "Press START", 7);
+    /* Draw text overlay on bottom rows */
+    title_draw_text(4, 13, "GBHack v1.0.0", 7);
+    title_draw_text(2, 14, "by @statico and", 7);
+    title_draw_text(5, 15, "Claude Code", 7);
+    title_draw_text(5, 17, "PRESS START", 7);
 
-    hiscore = save_get_hiscore();
-    if (hiscore > 0) {
-        uint8_t buf[18];
-        uint16_t val;
-        uint8_t pos;
-        uint8_t digits[5];
-        uint8_t d;
+    /* Wait for START with pulsing "PRESS START" text */
+    {
+        uint8_t frame;
+        uint8_t prev_visible;
+        uint8_t visible;
 
-        buf[0] = 'H';
-        buf[1] = 'i';
-        buf[2] = ':';
-        buf[3] = ' ';
+        frame = 0;
+        prev_visible = 1;
 
-        val = hiscore;
-        pos = 0;
-        do {
-            digits[pos] = val % 10;
-            val /= 10;
-            pos++;
-        } while (val > 0);
+        while (1) {
+            wait_vbl_done();
+            input_update();
+            if (joy_pressed & J_START) {
+                break;
+            }
 
-        d = 4;
-        while (pos > 0) {
-            pos--;
-            buf[d] = '0' + digits[pos];
-            d++;
-        }
-        buf[d] = '\0';
-
-        title_draw_text(6, 17, (const char *)buf, 7);
-    }
-
-    /* Wait for START */
-    while (1) {
-        wait_vbl_done();
-        input_update();
-        if (joy_pressed & J_START) {
-            break;
+            frame++;
+            /* Pulse: visible for ~40 frames, hidden for ~24 frames */
+            visible = (frame & 0x3F) < 0x28;
+            if (visible != prev_visible) {
+                if (visible) {
+                    title_draw_text(5, 17, "PRESS START", 7);
+                } else {
+                    title_draw_text(5, 17, "           ", 7);
+                }
+                prev_visible = visible;
+            }
         }
     }
 }
