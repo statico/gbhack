@@ -81,9 +81,12 @@ const char *item_name(uint8_t type_id) {
 }
 
 const char *item_appearance_name(uint8_t type_id) {
+    static char buf[21];
     uint8_t cat;
     uint8_t effect;
     uint8_t appearance_idx;
+    const char *src;
+    uint8_t i, j;
 
     if (type_id >= num_item_types) return "???";
 
@@ -94,24 +97,43 @@ const char *item_appearance_name(uint8_t type_id) {
         if (identified_potions & (1 << effect)) {
             return item_names[type_id];
         }
+        src = 0;
         for (appearance_idx = 0; appearance_idx < 6; appearance_idx++) {
             if (potion_appearances[appearance_idx] == effect) {
-                return potion_appearance_names[appearance_idx];
+                src = potion_appearance_names[appearance_idx];
+                break;
             }
         }
-        return "strange potion";
+        if (!src) return "strange potion";
+        /* Build "<color> potion" */
+        i = 0;
+        for (j = 0; src[j] && i < 13; j++) buf[i++] = src[j];
+        buf[i++] = ' ';
+        buf[i++] = 'p'; buf[i++] = 'o'; buf[i++] = 't';
+        buf[i++] = 'i'; buf[i++] = 'o'; buf[i++] = 'n';
+        buf[i] = '\0';
+        return buf;
     }
 
     if (cat == ICAT_SCROLL) {
         if (identified_scrolls & (1 << effect)) {
             return item_names[type_id];
         }
+        src = 0;
         for (appearance_idx = 0; appearance_idx < 6; appearance_idx++) {
             if (scroll_appearances[appearance_idx] == effect) {
-                return scroll_appearance_names[appearance_idx];
+                src = scroll_appearance_names[appearance_idx];
+                break;
             }
         }
-        return "strange scroll";
+        if (!src) return "strange scroll";
+        /* Build "Scroll: <name>" */
+        buf[0] = 'S'; buf[1] = 'c'; buf[2] = 'r'; buf[3] = 'o';
+        buf[4] = 'l'; buf[5] = 'l'; buf[6] = ':'; buf[7] = ' ';
+        i = 8;
+        for (j = 0; src[j] && i < 20; j++) buf[i++] = src[j];
+        buf[i] = '\0';
+        return buf;
     }
 
     return item_names[type_id];

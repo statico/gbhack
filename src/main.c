@@ -884,6 +884,16 @@ void main(void) {
                 fov_clear();
                 fov_calculate(player.x, player.y);
                 render_full_redraw();
+
+                /* Start dungeon music appropriate for restored level */
+                if (player.dungeon_level >= 15) {
+                    sound_play_music(MUSIC_BOSS);
+                } else if (player.dungeon_level >= 8) {
+                    sound_play_music(MUSIC_DUNGEON2);
+                } else {
+                    sound_play_music(MUSIC_DUNGEON1);
+                }
+
                 ui_message("Welcome back.");
             } else {
                 save_delete();

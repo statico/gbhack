@@ -217,9 +217,13 @@ void player_gain_xp(uint16_t xp) {
 }
 
 void player_update_hunger(void) {
+    uint8_t prev_state;
+
     if (player.nutrition > 0) {
         player.nutrition--;
     }
+
+    prev_state = player.hunger_state;
 
     if (player.nutrition > 1000) {
         player.hunger_state = HUNGER_SATIATED;
@@ -235,6 +239,17 @@ void player_update_hunger(void) {
         player.hunger_state = HUNGER_STARVED;
         death_cause = "starvation";
         player.hp = 0;
+    }
+
+    /* Announce hunger milestones */
+    if (player.hunger_state != prev_state) {
+        if (player.hunger_state == HUNGER_HUNGRY) {
+            ui_message("You are hungry.");
+        } else if (player.hunger_state == HUNGER_WEAK) {
+            ui_message("You feel weak.");
+        } else if (player.hunger_state == HUNGER_FAINTING) {
+            ui_message("You are starving!");
+        }
     }
 }
 

@@ -27,6 +27,7 @@
 #define TILE_ICON_STAIRS    12
 #define TILE_ICON_HOURGLASS 13
 #define TILE_ICON_SWORD     14
+#define TILE_ICON_MEAT      21
 #define TILE_MONSTER_BASE 64
 #define TILE_ITEM_BASE   128
 
@@ -408,9 +409,10 @@ void render_status_bar(void) BANKED {
     uint8_t lv_start, lv_end;
     uint8_t gold_start, gold_end;
     uint8_t turn_start, turn_end;
+    uint8_t hunger_pos;
     uint8_t hp_pal;
 
-    /* Format: heart HP  armor AC  Lv#  $gold  T turns */
+    /* Format: heart HP  armor AC  Lv#  $gold  Tturns  [meat] */
     for (i = 0; i < 20; i++) {
         tiles[i] = ' ';
         attrs[i] = PAL_UI;
@@ -462,6 +464,14 @@ void render_status_bar(void) BANKED {
         turn_end = 0;
     }
 
+    /* Hunger indicator: meat icon only when hungry or worse */
+    hunger_pos = 255;
+    if (player.hunger_state >= HUNGER_HUNGRY && pos < 20) {
+        tiles[pos] = TILE_ICON_MEAT;
+        hunger_pos = pos;
+        pos++;
+    }
+
     /* Write tiles to BKG row 0 */
     VBK_REG = 0;
     for (i = 0; i < 20; i++) {
@@ -487,6 +497,15 @@ void render_status_bar(void) BANKED {
     for (i = lv_start; i < lv_end; i++) attrs[i] = PAL_UI;          /* white */
     for (i = gold_start; i < gold_end; i++) attrs[i] = PAL_SPECIAL; /* gold/yellow */
     for (i = turn_start; i < turn_end; i++) attrs[i] = PAL_EQUIPMENT; /* blue */
+
+    /* Hunger icon: orange when hungry/weak, red when fainting/starving */
+    if (hunger_pos != 255) {
+        if (player.hunger_state >= HUNGER_FAINTING) {
+            attrs[hunger_pos] = PAL_HOSTILE;    /* red */
+        } else {
+            attrs[hunger_pos] = PAL_NEUTRAL;    /* orange/amber */
+        }
+    }
 
     VBK_REG = 1;
     for (i = 0; i < 20; i++) {
