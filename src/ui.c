@@ -1022,3 +1022,48 @@ uint8_t ui_yes_no(const char *question) {
         }
     }
 }
+
+uint8_t ui_pet_choice(void) {
+    uint8_t cursor;  /* 0 = Cat, 1 = Dog */
+    uint8_t prev_cursor;
+
+    cursor = 0;
+    prev_cursor = 0;
+
+    /* Draw the full screen once */
+    ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
+    ui_draw_text(3, 2, "Starting Pet?", PAL_UI);
+
+    ui_draw_text(7, 6, "Cat", PAL_UI);
+    ui_draw_text(7, 8, "Dog", PAL_UI);
+
+    /* Draw initial cursor */
+    ui_draw_text(5, 6, ">", PAL_UI);
+    ui_draw_text(5, 8, " ", PAL_UI);
+
+    for (;;) {
+        if (prev_cursor != cursor) {
+            /* Clear old cursor, draw new */
+            ui_draw_text(5, 6 + prev_cursor * 2, " ", PAL_UI);
+            ui_draw_text(5, 6 + cursor * 2, ">", PAL_UI);
+        }
+        prev_cursor = cursor;
+
+        wait_vbl_done();
+        input_update();
+
+        if (joy_pressed & J_UP) {
+            cursor = 0;
+        }
+        if (joy_pressed & J_DOWN) {
+            cursor = 1;
+        }
+
+        if ((joy_pressed & J_A) || (joy_pressed & J_START)) {
+            ui_needs_redraw = 1;
+            /* 1 = PET_CAT, 2 = PET_DOG */
+            return cursor + 1;
+        }
+        /* No B cancel — player must choose */
+    }
+}

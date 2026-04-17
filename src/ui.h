@@ -46,6 +46,7 @@ uint8_t ui_select_menu(void);
 
 /* Yes/No prompt */
 uint8_t ui_yes_no(const char *question);  /* returns 1 for yes, 0 for no */
+uint8_t ui_pet_choice(void);  /* returns 1=cat, 2=dog */
 
 /* Drawing helpers (used internally and by render) */
 void ui_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal);

@@ -355,15 +355,7 @@ static void new_game(void) {
     player.y = stairs_up_y;
 
     /* Pet choice */
-    {
-        uint8_t pet_choice;
-        pet_choice = ui_yes_no("Start w/ cat?");
-        if (pet_choice) {
-            pet_init(1);
-        } else {
-            pet_init(2);
-        }
-    }
+    pet_init(ui_pet_choice());
 
     /* Initial FOV */
     fov_clear();
