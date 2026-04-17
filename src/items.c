@@ -187,6 +187,9 @@ static uint8_t item_initial_qty(uint8_t type_id, uint8_t level) {
         if (type_id == 26) return rng_range(4, 8);
         return rng_range(3, 6);
     }
+    if (type_id == 34) {  /* Pickaxe: durability */
+        return 255;  /* max uint8_t — durability uses */
+    }
     return 1;
 }
 

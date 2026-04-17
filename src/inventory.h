@@ -16,5 +16,6 @@ void inventory_equip(uint8_t slot) BANKED;
 void inventory_unequip(uint8_t slot) BANKED;
 uint8_t inventory_get_weapon_damage(void) BANKED;  /* dice sides of equipped weapon, 0 if none */
 int8_t inventory_get_armor_ac(void) BANKED;  /* total AC bonus from equipped armor */
+uint8_t inventory_get_equipped_pickaxe(void) BANKED;  /* returns slot or 255 */
 
 #endif

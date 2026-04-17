@@ -349,6 +349,29 @@ void inventory_use(uint8_t slot) BANKED {
                 inventory_equip(slot);
             }
             break;
+        case ICAT_TOOL:
+            if (inventory[slot].type_id == 34) {
+                /* Pickaxe: toggle equip like a weapon */
+                if (inventory[slot].flags & IFLAG_EQUIPPED) {
+                    inventory_unequip(slot);
+                } else {
+                    /* Unequip any other pickaxe first */
+                    {
+                        uint8_t pi;
+                        for (pi = 0; pi < MAX_INVENTORY; pi++) {
+                            if (inventory[pi].type_id == 34 &&
+                                (inventory[pi].flags & IFLAG_EQUIPPED)) {
+                                inventory[pi].flags &= ~IFLAG_EQUIPPED;
+                            }
+                        }
+                    }
+                    inventory[slot].flags |= IFLAG_EQUIPPED;
+                    ui_message("You wield the pick.");
+                }
+            } else {
+                ui_message("Can't use that.");
+            }
+            break;
         default:
             ui_message("Can't use that.");
             break;
@@ -501,4 +524,15 @@ int8_t inventory_get_armor_ac(void) BANKED {
     }
 
     return total_ac;  /* negative = better AC */
+}
+
+uint8_t inventory_get_equipped_pickaxe(void) BANKED {
+    uint8_t i;
+    for (i = 0; i < MAX_INVENTORY; i++) {
+        if (inventory[i].type_id == 34 &&
+            (inventory[i].flags & IFLAG_EQUIPPED)) {
+            return i;
+        }
+    }
+    return 255;
 }

@@ -1,5 +1,6 @@
 #include "player.h"
 #include "dungeon.h"
+#include "inventory.h"
 #include "monsters.h"
 #include "pet.h"
 #include "render.h"
@@ -82,8 +83,28 @@ uint8_t player_move(int8_t dx, int8_t dy) {
         return 0;
     }
 
-    /* Check passability - return 1 to signal wall bump */
+    /* Check passability */
     if (!CELL_IS_PASSABLE(cell)) {
+        /* Mining: if pickaxe equipped and target is a wall, dig it */
+        if (terrain == TERRAIN_WALL) {
+            uint8_t pick_slot;
+            pick_slot = inventory_get_equipped_pickaxe();
+            if (pick_slot != 255) {
+                dungeon_set_cell(nx, ny, TERRAIN_CORRIDOR);
+                sound_play_sfx(SFX_HIT);
+                inventory[pick_slot].quantity--;
+                if (inventory[pick_slot].quantity == 0) {
+                    inventory[pick_slot].flags &= ~IFLAG_EQUIPPED;
+                    inventory_remove(pick_slot);
+                    ui_message("Your pickaxe breaks!");
+                } else {
+                    ui_message("You dig.");
+                }
+                player.nutrition--;
+                player.turns++;
+                return 0;
+            }
+        }
         return 1;
     }
 
