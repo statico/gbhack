@@ -28,3 +28,4 @@ gbdk/
 .claude/
 .playwright-mcp/
 !site/gbhack.gbc
+!site/screenshot-title.png
