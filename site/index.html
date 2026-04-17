@@ -35,6 +35,7 @@
     }
 
     .emulator-wrapper {
+      position: relative;
       width: 100%;
       max-width: 640px;
       margin: 0 auto;
@@ -43,6 +44,57 @@
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid #2a2a3e;
+    }
+
+    .placeholder {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+
+    .placeholder::after {
+      content: "";
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(13, 13, 26, 0.75);
+      border: 3px solid #9bbc0f;
+      box-shadow: 0 0 32px rgba(155, 188, 15, 0.4);
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .placeholder::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      width: 0;
+      height: 0;
+      border-left: 28px solid #9bbc0f;
+      border-top: 18px solid transparent;
+      border-bottom: 18px solid transparent;
+      margin-left: 8px;
+      transition: transform 0.15s;
+    }
+
+    .placeholder:hover::after {
+      background: rgba(155, 188, 15, 0.15);
+      transform: scale(1.05);
+    }
+
+    .placeholder:hover::before {
+      transform: scale(1.05);
     }
 
     /* Description */
@@ -63,27 +115,6 @@
       max-width: 540px;
       margin: 0 auto 16px;
     }
-
-    .badges {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-gbc { background: #1a2e1a; color: #9bbc0f; border: 1px solid #2a4a2a; }
-    .badge-roguelike { background: #2e1a1a; color: #bc4a0f; border: 1px solid #4a2a2a; }
-    .badge-claude { background: #1a1a2e; color: #6b8afd; border: 1px solid #2a2a4a; }
 
     /* Controls */
     .controls-section {
@@ -230,6 +261,9 @@
   <section class="emulator-section">
     <div class="emulator-wrapper">
       <div id="game" style="width:100%;height:100%"></div>
+      <div id="placeholder" class="placeholder" role="button" tabindex="0" aria-label="Click to play">
+        <img src="screenshot-title.png" alt="GBHack title screen">
+      </div>
     </div>
   </section>
 
@@ -237,11 +271,6 @@
   <section class="description">
     <h1>GBHack: Dungeons of Doom</h1>
     <p class="subtitle">A roguelike dungeon crawler for the Game Boy Color, inspired by NetHack. Procedural dungeons, permadeath, unidentified items, pets, shops, and the Amulet of Yendor.</p>
-    <div class="badges">
-      <span class="badge badge-gbc">Game Boy Color</span>
-      <span class="badge badge-roguelike">Roguelike</span>
-      <span class="badge badge-claude">Built with Claude Code</span>
-    </div>
   </section>
 
   <!-- Controls -->
@@ -320,7 +349,7 @@
 
 </div>
 
-<!-- EmulatorJS -->
+<!-- EmulatorJS (lazy-loaded on click) -->
 <script type="text/javascript">
   EJS_player = '#game';
   EJS_core = 'gambatte';
@@ -329,8 +358,24 @@
   EJS_color = '#1a1a2e';
   EJS_startOnLoaded = true;
   EJS_volume = 0.5;
+
+  (function () {
+    var placeholder = document.getElementById('placeholder');
+    var started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      placeholder.remove();
+      var s = document.createElement('script');
+      s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+      document.body.appendChild(s);
+    }
+    placeholder.addEventListener('click', start);
+    placeholder.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(); }
+    });
+  })();
 </script>
-<script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 
 </body>
 </html>
