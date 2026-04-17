@@ -23,30 +23,30 @@ void ui_show_messages(void);          /* Render pending messages */
 #define ACTION_WAIT      9
 #define ACTION_SAVE_QUIT 10
 
-uint8_t ui_action_menu(void);  /* Blocks until player picks an action */
+uint8_t ui_action_menu(void) BANKED;  /* Blocks until player picks an action */
 
 /* Inventory screen -- returns selected slot or 255 if cancelled */
 uint8_t ui_inventory_screen(uint8_t filter_category);  /* 255 = show all */
 
 /* Direction prompt -- returns DIR_* or DIR_NONE if cancelled */
-uint8_t ui_direction_prompt(void);
+uint8_t ui_direction_prompt(void) BANKED;
 
 /* Character sheet */
-void ui_character_sheet(void);
+void ui_character_sheet(void) BANKED;
 
 /* Message history */
-void ui_message_history(void);
+void ui_message_history(void) BANKED;
 
 /* Help screen */
-void ui_help_screen(void);
+void ui_help_screen(void) BANKED;
 
 /* Select menu — returns action taken (255 = cancelled) */
 #define SEL_MENU_QUIT 4
-uint8_t ui_select_menu(void);
+uint8_t ui_select_menu(void) BANKED;
 
 /* Yes/No prompt */
-uint8_t ui_yes_no(const char *question);  /* returns 1 for yes, 0 for no */
-uint8_t ui_pet_choice(void);  /* returns 1=cat, 2=dog */
+uint8_t ui_yes_no(const char *question) BANKED;  /* returns 1 for yes, 0 for no */
+uint8_t ui_pet_choice(void) BANKED;  /* returns 1=cat, 2=dog */
 
 /* Drawing helpers (used internally and by render) */
 void ui_draw_text(uint8_t x, uint8_t y, const char *str, uint8_t pal);
