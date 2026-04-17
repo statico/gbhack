@@ -46,6 +46,10 @@
       border: 2px solid #2a2a3e;
     }
 
+    .emulator-wrapper canvas {
+      filter: saturate(1.25) contrast(1.05);
+    }
+
     .placeholder {
       position: absolute;
       inset: 0;
@@ -70,8 +74,8 @@
       height: 88px;
       border-radius: 50%;
       background: rgba(13, 13, 26, 0.75);
-      border: 3px solid #9bbc0f;
-      box-shadow: 0 0 32px rgba(155, 188, 15, 0.4);
+      border: 3px solid #fff;
+      box-shadow: 0 0 32px rgba(255, 255, 255, 0.4);
       transition: transform 0.15s, background 0.15s;
     }
 
@@ -81,7 +85,7 @@
       z-index: 1;
       width: 0;
       height: 0;
-      border-left: 28px solid #9bbc0f;
+      border-left: 28px solid #fff;
       border-top: 18px solid transparent;
       border-bottom: 18px solid transparent;
       margin-left: 8px;
@@ -89,7 +93,7 @@
     }
 
     .placeholder:hover::after {
-      background: rgba(155, 188, 15, 0.15);
+      background: rgba(255, 255, 255, 0.15);
       transform: scale(1.05);
     }
 
