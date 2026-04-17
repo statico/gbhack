@@ -430,12 +430,7 @@ void render_status_bar(void) BANKED {
     /* Use armor item tile for AC icon */
     ac_start = pos;
     tiles[pos++] = (uint8_t)(TILE_ITEM_BASE + 7);  /* chain mail tile */
-    if (player.ac < 0) {
-        tiles[pos++] = '-';
-        pos += write_num((char *)&tiles[pos], (uint16_t)(-(int16_t)player.ac), 2);
-    } else {
-        pos += write_num((char *)&tiles[pos], (uint16_t)player.ac, 2);
-    }
+    pos += write_num((char *)&tiles[pos], (uint16_t)player.ac, 2);
     ac_end = pos;
     tiles[pos++] = ' ';
 

@@ -27,12 +27,32 @@ static const uint16_t xp_thresholds[] = {
 /* Forward declarations for combat helpers */
 static void player_attack_monster(uint8_t idx);
 
+/* Build "Welcome to level N!" into buf (buf must be at least MSG_MAX_LEN+1). */
+static void build_levelup_message(char *buf, uint8_t level) {
+    const char *prefix = "Welcome to level ";
+    uint8_t i;
+    uint8_t pos;
+
+    pos = 0;
+    for (i = 0; prefix[i] != '\0'; i++) {
+        buf[pos++] = prefix[i];
+    }
+    if (level >= 10) {
+        buf[pos++] = '0' + (level / 10);
+        buf[pos++] = '0' + (level % 10);
+    } else {
+        buf[pos++] = '0' + level;
+    }
+    buf[pos++] = '!';
+    buf[pos] = '\0';
+}
+
 void player_init(void) {
     player.x = 0;
     player.y = 0;
     player.hp = 20;
     player.max_hp = 20;
-    player.ac = 10;
+    player.ac = 0;
     player.strength = 10;
     player.level = 1;
     player.xp = 0;
@@ -157,8 +177,8 @@ static void player_attack_monster(uint8_t idx) {
         return;
     }
 
-    /* Damage: bare hands 1d4 + strength/4 bonus */
-    dmg = rng_roll(1, 4) + (player.strength >> 2);
+    /* Damage: weapon dice (1d4 bare hands) + strength/4 bonus */
+    dmg = rng_roll(1, inventory_get_weapon_damage()) + (player.strength >> 2);
     if (dmg == 0) {
         dmg = 1;
     }
@@ -211,6 +231,7 @@ void player_heal(uint8_t amount) {
 void player_gain_xp(uint16_t xp) {
     uint8_t thresh_idx;
     uint8_t roll;
+    char lvlbuf[MSG_MAX_LEN + 1];
 
     player.xp += xp;
 
@@ -234,6 +255,11 @@ void player_gain_xp(uint16_t xp) {
         if (rng_range(0, 1)) {
             player.strength++;
         }
+
+        /* Announce the new level */
+        build_levelup_message(lvlbuf, player.level);
+        ui_message(lvlbuf);
+        sound_play_sfx(SFX_LEVELUP);
     }
 }
 

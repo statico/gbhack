@@ -135,10 +135,16 @@ void inventory_pickup(void) BANKED {
 /* Drop                                                                */
 /* ------------------------------------------------------------------ */
 
+/* Recompute player.ac from currently equipped armor. */
+static void refresh_armor_ac(void) {
+    player.ac = inventory_get_armor_ac();
+}
+
 void inventory_drop(uint8_t slot) BANKED {
     uint8_t type_id;
     uint8_t qty;
     uint8_t spawned;
+    uint8_t was_equipped_armor;
 
     if (slot >= MAX_INVENTORY) return;
     if (inventory[slot].type_id == 255) return;
@@ -150,12 +156,18 @@ void inventory_drop(uint8_t slot) BANKED {
         return;
     }
 
+    type_id = inventory[slot].type_id;
+    was_equipped_armor = (inventory[slot].flags & IFLAG_EQUIPPED) &&
+                         (item_types[type_id].category == ICAT_ARMOR);
+
     /* Unequip first if equipped */
     if (inventory[slot].flags & IFLAG_EQUIPPED) {
         inventory[slot].flags &= ~IFLAG_EQUIPPED;
+        if (was_equipped_armor) {
+            refresh_armor_ac();
+        }
     }
 
-    type_id = inventory[slot].type_id;
     qty     = inventory[slot].quantity;
 
     spawned = item_spawn(type_id, player.x, player.y, qty);
@@ -465,11 +477,15 @@ void inventory_equip(uint8_t slot) BANKED {
         }
         inventory[slot].flags |= IFLAG_EQUIPPED;
         ui_message("You put it on.");
+        refresh_armor_ac();
     }
     /* Other categories cannot be equipped */
 }
 
 void inventory_unequip(uint8_t slot) BANKED {
+    uint8_t tid;
+    uint8_t was_armor;
+
     if (slot >= MAX_INVENTORY) return;
     if (inventory[slot].type_id == 255) return;
     if (!(inventory[slot].flags & IFLAG_EQUIPPED)) return;
@@ -482,8 +498,15 @@ void inventory_unequip(uint8_t slot) BANKED {
         return;
     }
 
+    tid = inventory[slot].type_id;
+    was_armor = (item_types[tid].category == ICAT_ARMOR);
+
     inventory[slot].flags &= ~IFLAG_EQUIPPED;
     ui_message("You remove it.");
+
+    if (was_armor) {
+        refresh_armor_ac();
+    }
 }
 
 /* ------------------------------------------------------------------ */
@@ -519,11 +542,11 @@ int8_t inventory_get_armor_ac(void) BANKED {
 
         tid = inventory[i].type_id;
         if (item_types[tid].category == ICAT_ARMOR) {
-            total_ac -= (int8_t)item_types[tid].effect;
+            total_ac += (int8_t)item_types[tid].effect;
         }
     }
 
-    return total_ac;  /* negative = better AC */
+    return total_ac;  /* positive = better defense */
 }
 
 uint8_t inventory_get_equipped_pickaxe(void) BANKED {

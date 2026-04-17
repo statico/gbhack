@@ -16,7 +16,7 @@
  *   Bank 2: bones data + high score
  */
 
-#define SAVE_MARKER_VALID 0x42
+#define SAVE_MARKER_VALID 0x43
 
 /* SRAM base addresses for our data (after marker + checksum) */
 #define SRAM_BASE          0xA000

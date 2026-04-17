@@ -2,6 +2,7 @@
 
 uint8_t joy_current = 0;
 uint8_t joy_pressed = 0;
+uint8_t joy_released = 0;
 static uint8_t joy_previous = 0;
 
 /* Auto-repeat state for D-pad */
@@ -10,12 +11,18 @@ static uint8_t joy_previous = 0;
 static uint8_t repeat_timer = 0;
 static uint8_t repeat_active = 0;
 
+/* Tracks whether a direction was pressed at any point during the current B
+   hold — if so, releasing B is not a "tap alone" and must not trigger rest. */
+static uint8_t b_hold_used_direction = 0;
+
 void input_update(void) {
     uint8_t dpad_mask;
+    uint8_t dpad_pressed;
 
     joy_previous = joy_current;
     joy_current = joypad();
     joy_pressed = joy_current & ~joy_previous;
+    joy_released = joy_previous & ~joy_current;
 
     /* Track D-pad hold for auto-repeat */
     dpad_mask = joy_current & (J_UP | J_DOWN | J_LEFT | J_RIGHT);
@@ -25,6 +32,20 @@ void input_update(void) {
         repeat_timer = 0;
         repeat_active = 0;
     }
+
+    /* B-tap-alone tracking: a fresh B press starts a clean hold; any direction
+       press during the hold disqualifies it; releasing B ends the hold. */
+    if (joy_pressed & J_B) {
+        b_hold_used_direction = 0;
+    }
+    dpad_pressed = joy_pressed & (J_UP | J_DOWN | J_LEFT | J_RIGHT);
+    if ((joy_current & J_B) && dpad_pressed) {
+        b_hold_used_direction = 1;
+    }
+}
+
+uint8_t input_b_tapped_alone(void) {
+    return (joy_released & J_B) && !b_hold_used_direction;
 }
 
 uint8_t input_get_direction(void) {

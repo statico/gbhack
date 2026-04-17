@@ -285,9 +285,10 @@ static void monster_attack_player(uint8_t idx) {
 
     mt = &monster_types[monsters[idx].type_id];
 
-    /* Roll 1d20 + monster level, hit if >= player AC + 10 */
+    /* Roll 1d20 + monster level; hit if total >= 10 + player.ac.
+       Higher player.ac (from armor) = harder to hit. */
     roll = rng_range(1, 20) + mt->level;
-    if (roll < (uint8_t)(player.ac + 10)) {
+    if (roll < (uint8_t)(10 + player.ac)) {
         /* Miss */
         return;
     }

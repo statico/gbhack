@@ -50,67 +50,66 @@ static uint8_t pet_try_move(int8_t dx, int8_t dy);
 static void pet_try_attack(void);
 static void pet_try_eat(void);
 static uint8_t pet_tile_has_cursed_item(uint8_t x, uint8_t y);
+static uint8_t pet_find_spawn_tile(uint8_t *ox, uint8_t *oy);
+static uint8_t pet_alloc_slot(void);
 
-void pet_init(uint8_t type) BANKED {
+static uint8_t pet_find_spawn_tile(uint8_t *ox, uint8_t *oy) {
+    static const int8_t dxs[8] = {  1, -1,  0,  0,  1, -1,  1, -1 };
+    static const int8_t dys[8] = {  0,  0,  1, -1,  1,  1, -1, -1 };
     uint8_t i;
-    uint8_t slot;
     uint8_t px, py;
     uint8_t sx, sy;
-    int8_t dx, dy;
     uint8_t cell;
-    uint8_t found;
 
-    if (type == PET_NONE) return;
-
-    /* Find a passable tile adjacent to the player */
     px = player.x;
     py = player.y;
-    found = 0;
 
     for (i = 0; i < 8; i++) {
-        switch (i) {
-        case 0: dx =  1; dy =  0; break;
-        case 1: dx = -1; dy =  0; break;
-        case 2: dx =  0; dy =  1; break;
-        case 3: dx =  0; dy = -1; break;
-        case 4: dx =  1; dy =  1; break;
-        case 5: dx = -1; dy =  1; break;
-        case 6: dx =  1; dy = -1; break;
-        case 7: dx = -1; dy = -1; break;
-        default: dx = 0; dy = 0; break;
-        }
-
-        sx = px + dx;
-        sy = py + dy;
+        sx = px + dxs[i];
+        sy = py + dys[i];
 
         if (sx >= MAP_WIDTH || sy >= MAP_HEIGHT) continue;
-
         if (!dungeon_is_passable(sx, sy)) continue;
 
         cell = dungeon_get_cell(sx, sy);
         if (cell & CELL_HAS_MONSTER) continue;
 
-        found = 1;
-        break;
+        *ox = sx;
+        *oy = sy;
+        return 1;
     }
 
-    if (!found) {
-        /* Fallback: spawn on a random floor tile */
-        dungeon_find_random_floor(&sx, &sy);
+    /* Fallback: spawn on a random floor tile */
+    dungeon_find_random_floor(ox, oy);
+    return 1;
+}
+
+static uint8_t pet_alloc_slot(void) {
+    uint8_t i;
+    for (i = 0; i < MAX_MONSTERS; i++) {
+        if (!monsters[i].active) {
+            return i;
+        }
     }
+    return 255;
+}
+
+void pet_init(uint8_t type) BANKED {
+    uint8_t slot;
+    uint8_t sx, sy;
+    uint8_t cell;
+
+    if (type == PET_NONE) return;
+
+    /* Find a passable tile adjacent to the player (falls back to random floor) */
+    pet_find_spawn_tile(&sx, &sy);
 
     /*
      * Allocate a monster slot manually. We reuse the first monster type
      * (type_id 0, Newt) as a placeholder since we override stats below.
      * The type_id is stored but the actual stats are set directly.
      */
-    slot = 255;
-    for (i = 0; i < MAX_MONSTERS; i++) {
-        if (!monsters[i].active) {
-            slot = i;
-            break;
-        }
-    }
+    slot = pet_alloc_slot();
 
     if (slot == 255) {
         ui_message("No room for pet!");
@@ -148,6 +147,45 @@ void pet_init(uint8_t type) BANKED {
     } else {
         ui_message("A puppy follows!");
     }
+}
+
+void pet_respawn_after_stairs(uint8_t type, uint8_t hp, uint8_t status) BANKED {
+    uint8_t slot;
+    uint8_t sx, sy;
+    uint8_t cell;
+
+    if (type == PET_NONE) return;
+
+    /* Find a passable tile adjacent to the player (falls back to random floor) */
+    pet_find_spawn_tile(&sx, &sy);
+
+    slot = pet_alloc_slot();
+
+    if (slot == 255) {
+        /* No room: abandon pet */
+        pet_index = 255;
+        player.pet_type = 0;
+        return;
+    }
+
+    monsters[slot].active = 1;
+    monsters[slot].type_id = 0;
+    monsters[slot].x = sx;
+    monsters[slot].y = sy;
+    monsters[slot].status = status | MSTAT_PEACEFUL;
+    monsters[slot].hp = hp;
+    monsters[slot].timer = 0;
+    monsters[slot].target_x = 0;
+    monsters[slot].target_y = 0;
+    monsters[slot].item1 = 0;
+    monsters[slot].item2 = 0;
+
+    cell = dungeon_get_cell(sx, sy);
+    dungeon_set_cell(sx, sy, cell | CELL_HAS_MONSTER);
+
+    pet_index = slot;
+    pet_away_turns = 0;
+    player.pet_type = type;
 }
 
 void pet_update(void) BANKED {

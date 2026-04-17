@@ -203,24 +203,42 @@ static const unsigned char sfx_step[] = {
     0x00, 0x06, 0x71,
 };
 
-/* SFX lookup table */
-static const unsigned char * const sfx_table[] = {
-    sfx_attack,   /* SFX_ATTACK   0 */
-    sfx_pickup,   /* SFX_PICKUP   1 */
-    sfx_door,     /* SFX_DOOR     2 */
-    sfx_stairs,   /* SFX_STAIRS   3 */
-    sfx_eat,      /* SFX_EAT      4 */
-    sfx_death,    /* SFX_DEATH    5 */
-    sfx_levelup,  /* SFX_LEVELUP  6 */
-    sfx_shop,     /* SFX_SHOP     7 */
-    sfx_altar,    /* SFX_ALTAR    8 */
-    sfx_pet,      /* SFX_PET      9 */
-    sfx_hit,      /* SFX_HIT      10 */
-    sfx_miss,     /* SFX_MISS     11 */
-    sfx_step,     /* SFX_STEP     12 */
+/* MENU_MOVE: short clean tick (CH2 only, priority 6) */
+static const unsigned char sfx_menu_move[] = {
+    0x86, 1,
+    /* short clean tick */
+    0x00, 0x80, 0x80, 0x40, 0x87,
 };
 
-#define SFX_COUNT 13
+/* MENU_CONFIRM: bright ding (CH2 only, priority 6) */
+static const unsigned char sfx_menu_confirm[] = {
+    0x86, 2,
+    /* bright start */
+    0x00, 0x80, 0xF0, 0xC0, 0x87,
+    /* fade */
+    0x01, 0x80, 0x80, 0xE0, 0x87,
+};
+
+/* SFX lookup table */
+static const unsigned char * const sfx_table[] = {
+    sfx_attack,       /* SFX_ATTACK       0 */
+    sfx_pickup,       /* SFX_PICKUP       1 */
+    sfx_door,         /* SFX_DOOR         2 */
+    sfx_stairs,       /* SFX_STAIRS       3 */
+    sfx_eat,          /* SFX_EAT          4 */
+    sfx_death,        /* SFX_DEATH        5 */
+    sfx_levelup,      /* SFX_LEVELUP      6 */
+    sfx_shop,         /* SFX_SHOP         7 */
+    sfx_altar,        /* SFX_ALTAR        8 */
+    sfx_pet,          /* SFX_PET          9 */
+    sfx_hit,          /* SFX_HIT          10 */
+    sfx_miss,         /* SFX_MISS         11 */
+    sfx_step,         /* SFX_STEP         12 */
+    sfx_menu_move,    /* SFX_MENU_MOVE    13 */
+    sfx_menu_confirm, /* SFX_MENU_CONFIRM 14 */
+};
+
+#define SFX_COUNT 15
 
 /* Song data (in banked ROM) */
 extern const hUGESong_t song_title;
@@ -316,16 +334,14 @@ void sound_stop_music(void) {
 void sound_update(void) {
     uint8_t saved_bank;
 
-    /* Process CBT-FX sound effects (always, even without music) */
-    CBTFX_update();
-
-    /* Process hUGEDriver music tick */
+    /* Music tick first; SFX writes win on shared channels */
     if (music_playing) {
         saved_bank = CURRENT_BANK;
         SWITCH_ROM(music_bank);
         hUGE_dosound();
         SWITCH_ROM(saved_bank);
     }
+    CBTFX_update();
 }
 
 void sound_toggle_music(void) {

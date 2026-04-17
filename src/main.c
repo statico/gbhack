@@ -297,6 +297,7 @@ static void title_screen(void) {
             wait_vbl_done();
             input_update();
             if (joy_pressed & J_START) {
+                sound_play_sfx(SFX_MENU_CONFIRM);
                 break;
             }
 
@@ -372,15 +373,76 @@ static void new_game(void) {
 /* Stair traversal                                                     */
 /* ------------------------------------------------------------------ */
 
+/* Check whether the pet is close enough to follow the player down/up stairs.
+   Returns 1 if pet is in range (Chebyshev distance <= 2), 0 otherwise. */
+static uint8_t pet_in_follow_range(void) {
+    int8_t dx, dy;
+    int8_t ax, ay;
+
+    if (pet_index == 255) return 0;
+    if (!monsters[pet_index].active) return 0;
+
+    dx = (int8_t)monsters[pet_index].x - (int8_t)player.x;
+    dy = (int8_t)monsters[pet_index].y - (int8_t)player.y;
+    ax = ABS(dx);
+    ay = ABS(dy);
+    if (ax <= 2 && ay <= 2) return 1;
+    return 0;
+}
+
+/* Build "dungeon level N." into buf (buf must be at least MSG_MAX_LEN+1). */
+static void build_level_message(char *buf, uint8_t level) {
+    const char *prefix = "dungeon level ";
+    uint8_t i;
+    uint8_t pos;
+
+    pos = 0;
+    for (i = 0; prefix[i] != '\0'; i++) {
+        buf[pos++] = prefix[i];
+    }
+    if (level >= 10) {
+        buf[pos++] = '0' + (level / 10);
+        buf[pos++] = '0' + (level % 10);
+    } else {
+        buf[pos++] = '0' + level;
+    }
+    buf[pos++] = '.';
+    buf[pos] = '\0';
+}
+
 static void descend_stairs(void) {
+    uint8_t bring_pet;
+    uint8_t saved_type;
+    uint8_t saved_hp;
+    uint8_t saved_status;
+    char lvlbuf[MSG_MAX_LEN + 1];
+
     if (player.dungeon_level >= MAX_DUNGEON_LEVELS) {
         ui_message("No deeper!");
         return;
     }
 
+    /* Determine if the pet comes with us */
+    bring_pet = 0;
+    saved_type = 0;
+    saved_hp = 0;
+    saved_status = 0;
+    if (pet_in_follow_range()) {
+        bring_pet = 1;
+        saved_type = player.pet_type;
+        saved_hp = monsters[pet_index].hp;
+        saved_status = monsters[pet_index].status;
+    } else if (pet_index != 255) {
+        /* Pet out of range: abandon it on the current level */
+        pet_index = 255;
+        player.pet_type = 0;
+    }
+
     player.dungeon_level++;
     dungeon_generate(player.dungeon_level);
     monsters_init();
+    /* monsters_init wiped our pet slot; clear the index so it's not stale */
+    pet_index = 255;
     monsters_spawn_for_level(player.dungeon_level);
     items_spawn_for_level(player.dungeon_level);
     shop_init();
@@ -397,6 +459,12 @@ static void descend_stairs(void) {
 
     player.x = stairs_up_x;
     player.y = stairs_up_y;
+
+    /* Re-create the pet next to the player on the new level */
+    if (bring_pet) {
+        pet_respawn_after_stairs(saved_type, saved_hp, saved_status);
+    }
+
     fov_clear();
     fov_calculate(player.x, player.y);
     render_full_redraw();
@@ -409,11 +477,18 @@ static void descend_stairs(void) {
         sound_play_music(MUSIC_DUNGEON2);
     }
 
-    ui_message("You descend.");
+    ui_message("You descend to");
+    build_level_message(lvlbuf, player.dungeon_level);
+    ui_message(lvlbuf);
 }
 
 static void ascend_stairs(void) {
     uint8_t amulet_slot;
+    uint8_t bring_pet;
+    uint8_t saved_type;
+    uint8_t saved_hp;
+    uint8_t saved_status;
+    char lvlbuf[MSG_MAX_LEN + 1];
 
     if (player.dungeon_level <= 1) {
         /* Check if player has the Amulet of Yendor */
@@ -427,13 +502,35 @@ static void ascend_stairs(void) {
         return;
     }
 
+    /* Determine if the pet comes with us */
+    bring_pet = 0;
+    saved_type = 0;
+    saved_hp = 0;
+    saved_status = 0;
+    if (pet_in_follow_range()) {
+        bring_pet = 1;
+        saved_type = player.pet_type;
+        saved_hp = monsters[pet_index].hp;
+        saved_status = monsters[pet_index].status;
+    } else if (pet_index != 255) {
+        /* Pet out of range: abandon it on the current level */
+        pet_index = 255;
+        player.pet_type = 0;
+    }
+
     player.dungeon_level--;
     dungeon_generate(player.dungeon_level);
     monsters_init();
+    pet_index = 255;
     monsters_spawn_for_level(player.dungeon_level);
     items_spawn_for_level(player.dungeon_level);
     player.x = stairs_down_x;
     player.y = stairs_down_y;
+
+    if (bring_pet) {
+        pet_respawn_after_stairs(saved_type, saved_hp, saved_status);
+    }
+
     fov_clear();
     fov_calculate(player.x, player.y);
     render_full_redraw();
@@ -447,7 +544,9 @@ static void ascend_stairs(void) {
         sound_play_music(MUSIC_DUNGEON1);
     }
 
-    ui_message("You ascend.");
+    ui_message("You ascend to");
+    build_level_message(lvlbuf, player.dungeon_level);
+    ui_message(lvlbuf);
 }
 
 /* ------------------------------------------------------------------ */
@@ -708,8 +807,10 @@ static void game_loop(void) {
                 break;
             }
 
-            /* B button without D-pad: contextual action */
-            if ((joy_pressed & J_B) && !(joy_current & (J_UP | J_DOWN | J_LEFT | J_RIGHT))) {
+            /* B tapped alone (press + release with no direction): contextual action.
+               Firing on release — not press — lets the player hold B and then
+               press a direction for diagonal movement without resting first. */
+            if (input_b_tapped_alone()) {
                 /* If standing on an item, pick it up */
                 uint8_t floor_idx;
                 floor_idx = item_at(player.x, player.y);

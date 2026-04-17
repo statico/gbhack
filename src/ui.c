@@ -362,6 +362,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
         if (joy_pressed & J_UP) {
             if (cursor > 0) {
                 cursor--;
+                sound_play_sfx(SFX_MENU_MOVE);
                 if (cursor < scroll_top) {
                     scroll_top = cursor;
                     full_redraw = 1;
@@ -372,6 +373,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
         if (joy_pressed & J_DOWN) {
             if (cursor < visible_count - 1) {
                 cursor++;
+                sound_play_sfx(SFX_MENU_MOVE);
                 if (cursor >= scroll_top + max_visible) {
                     scroll_top = cursor - max_visible + 1;
                     full_redraw = 1;
@@ -380,6 +382,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
         }
 
         if (joy_pressed & J_A) {
+            sound_play_sfx(SFX_MENU_CONFIRM);
             ui_needs_redraw = 1;
             return slot_map[cursor];
         }

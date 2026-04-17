@@ -157,17 +157,20 @@ uint8_t ui_action_menu(void) BANKED {
         if (joy_pressed & J_UP) {
             if (cursor > 0) cursor--;
             else cursor = NUM_ACTIONS - 1;
+            sound_play_sfx(SFX_MENU_MOVE);
             action_menu_draw(cursor);
         }
 
         if (joy_pressed & J_DOWN) {
             if (cursor < NUM_ACTIONS - 1) cursor++;
             else cursor = 0;
+            sound_play_sfx(SFX_MENU_MOVE);
             action_menu_draw(cursor);
         }
 
         if (joy_pressed & J_A) {
             result = action_ids[cursor];
+            sound_play_sfx(SFX_MENU_CONFIRM);
             ui_needs_redraw = 1;
             return result;
         }
@@ -254,7 +257,7 @@ void ui_character_sheet(void) BANKED {
     row++;
 
     ui_draw_text(1, row, "AC:", PAL_UI);
-    ui_draw_s8(5, row, player.ac, PAL_UI);
+    ui_draw_u8(5, row, (uint8_t)player.ac, PAL_UI);
     row++;
 
     ui_draw_text(1, row, "Str:", PAL_UI);
@@ -265,8 +268,8 @@ void ui_character_sheet(void) BANKED {
     ui_draw_u16(5, row, player.xp, PAL_UI);
     row++;
 
-    ui_draw_text(1, row, "Au:", PAL_UI);
-    ui_draw_u16(5, row, player.gold, PAL_UI);
+    ui_draw_text(1, row, "Gold:", PAL_UI);
+    ui_draw_u16(7, row, player.gold, PAL_UI);
     row++;
 
     ui_draw_text(1, row, "Dlvl:", PAL_UI);
@@ -360,6 +363,7 @@ void ui_message_history(void) BANKED {
         if (joy_pressed & J_UP) {
             if (scroll_top > 0) {
                 scroll_top--;
+                sound_play_sfx(SFX_MENU_MOVE);
                 need_draw = 1;
             }
         }
@@ -367,6 +371,7 @@ void ui_message_history(void) BANKED {
         if (joy_pressed & J_DOWN) {
             if (scroll_top + max_rows < msg_count) {
                 scroll_top++;
+                sound_play_sfx(SFX_MENU_MOVE);
                 need_draw = 1;
             }
         }
@@ -474,14 +479,17 @@ uint8_t ui_select_menu(void) BANKED {
         if (joy_pressed & J_UP) {
             if (cursor > 0) cursor--;
             else cursor = SEL_COUNT - 1;
+            sound_play_sfx(SFX_MENU_MOVE);
         }
 
         if (joy_pressed & J_DOWN) {
             if (cursor < SEL_COUNT - 1) cursor++;
             else cursor = 0;
+            sound_play_sfx(SFX_MENU_MOVE);
         }
 
         if (joy_pressed & J_A) {
+            sound_play_sfx(SFX_MENU_CONFIRM);
             switch (cursor) {
             case SEL_HELP:
                 ui_help_screen();
@@ -518,26 +526,67 @@ uint8_t ui_select_menu(void) BANKED {
 
 uint8_t ui_yes_no(const char *question) BANKED {
     uint8_t cursor;
+    uint8_t prev_cursor;
+    uint8_t qlen;
+    uint8_t qx;
 
-    cursor = 1;
+    cursor = 1;  /* default: No */
+    prev_cursor = cursor;
+
+    /* Compute centered x for the question (bounded scan). */
+    qlen = 0;
+    while (qlen < (uint8_t)(SCREEN_W - 2)) {
+        if (question[qlen] == '\0') break;
+        qlen++;
+    }
+    qx = (uint8_t)((SCREEN_W - qlen) >> 1);
 
     ui_draw_box(0, 0, SCREEN_W, SCREEN_H, PAL_UI);
-    ui_draw_text(1, 4, question, PAL_UI);
+    ui_draw_text(qx, 4, question, PAL_UI);
+
+    ui_draw_text(9, 8,  "Yes", PAL_UI);
+    ui_draw_text(9, 10, "No",  PAL_UI);
+
+    ui_draw_text(7, 8,  " ", PAL_UI);
+    ui_draw_text(7, 10, ">", PAL_UI);
 
     for (;;) {
-        if (cursor == 0) {
-            ui_draw_text(4, 8, ">Yes  No", PAL_UI);
-        } else {
-            ui_draw_text(4, 8, " Yes >No", PAL_UI);
+        if (prev_cursor != cursor) {
+            ui_draw_text(7, 8  + prev_cursor * 2, " ", PAL_UI);
+            ui_draw_text(7, 8  + cursor      * 2, ">", PAL_UI);
         }
+        prev_cursor = cursor;
 
         wait_vbl_done();
         input_update();
 
-        if (joy_pressed & J_LEFT)  cursor = 0;
-        if (joy_pressed & J_RIGHT) cursor = 1;
+        if (joy_pressed & J_UP) {
+            if (cursor != 0) {
+                cursor = 0;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
+        if (joy_pressed & J_DOWN) {
+            if (cursor != 1) {
+                cursor = 1;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
+        if (joy_pressed & J_LEFT) {
+            if (cursor != 0) {
+                cursor = 0;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
+        if (joy_pressed & J_RIGHT) {
+            if (cursor != 1) {
+                cursor = 1;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
 
         if (joy_pressed & J_A) {
+            sound_play_sfx(SFX_MENU_CONFIRM);
             ui_needs_redraw = 1;
             return (cursor == 0) ? 1 : 0;
         }
@@ -579,10 +628,21 @@ uint8_t ui_pet_choice(void) BANKED {
         wait_vbl_done();
         input_update();
 
-        if (joy_pressed & J_UP)   cursor = 0;
-        if (joy_pressed & J_DOWN) cursor = 1;
+        if (joy_pressed & J_UP) {
+            if (cursor != 0) {
+                cursor = 0;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
+        if (joy_pressed & J_DOWN) {
+            if (cursor != 1) {
+                cursor = 1;
+                sound_play_sfx(SFX_MENU_MOVE);
+            }
+        }
 
         if ((joy_pressed & J_A) || (joy_pressed & J_START)) {
+            sound_play_sfx(SFX_MENU_CONFIRM);
             ui_needs_redraw = 1;
             return cursor + 1;
         }

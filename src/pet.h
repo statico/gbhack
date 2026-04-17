@@ -10,4 +10,8 @@ void pet_update(void) BANKED;             /* call each turn after monsters_updat
 uint8_t pet_is_alive(void) BANKED;        /* returns 1 if pet exists and is active */
 void pet_check_feral(void) BANKED;        /* check if pet should go feral */
 
+/* Re-spawn a pet near the player after stair traversal, preserving hp/status.
+   Does NOT print a welcome message. */
+void pet_respawn_after_stairs(uint8_t type, uint8_t hp, uint8_t status) BANKED;
+
 #endif
