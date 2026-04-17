@@ -842,7 +842,7 @@ void ui_help_screen(void) {
     ui_draw_text(1, 13, "B with no item", PAL_UI);
     ui_draw_text(1, 14, " underfoot: rest.", PAL_UI);
 
-    ui_draw_text(3, 16, "Press any key", PAL_UI);
+    ui_draw_text(2, 16, "Press any button", PAL_UI);
 
     for (;;) {
         wait_vbl_done();
