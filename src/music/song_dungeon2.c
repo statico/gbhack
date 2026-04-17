@@ -1,3 +1,11 @@
+/*
+ * "Hideout" by Tronimal (Yoki), from the "Free Game Boy Music Pack".
+ * An original song from Tronimal's discontinued Patreon project. Licensed CC-BY.
+ * Source: music/Free Game Boy Music Pack/free_05_hideout.c
+ * Artist: https://trominal.itch.io/
+ * Only the exported hUGESong_t symbol name was changed from the original.
+ */
+
 #include "hUGEDriver.h"
 #include <stddef.h>
 

@@ -233,6 +233,15 @@ compiled to C data arrays for inclusion in the ROM. Integrating the music driver
 with the sound effect engine required careful channel management to avoid audio
 glitches when both systems access the same hardware registers.
 
+Debugging leaned heavily on [Gearboy](https://github.com/drhelius/Gearboy) and
+its MCP server, which exposes the emulator's state (CPU registers, memory,
+disassembly, breakpoints, the LCD, the APU) as tool calls. That let Claude Code
+drive a running build directly — setting breakpoints, stepping through SM83
+instructions, inspecting VRAM and OAM when a tile or sprite rendered wrong,
+and taking screenshots to verify what the player would actually see. Most
+rendering, FOV, and save-system bugs were diagnosed this way instead of through
+print-logging a ROM build.
+
 ## Credits
 
 - Code by [@statico](https://github.com/statico) and
@@ -244,6 +253,8 @@ glitches when both systems access the same hardware registers.
 - Built with [GBDK](https://github.com/gbdk-2020/gbdk-2020),
   [hUGEDriver](https://github.com/SuperDisk/hUGEDriver), and
   [CBT-FX](https://github.com/datmobiledev/cbtfx)
+- Debugged with [Gearboy](https://github.com/drhelius/Gearboy) and its MCP
+  server
 
 ## License
 

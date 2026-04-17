@@ -1,3 +1,11 @@
+/*
+ * "Terminate" by Tronimal (Yoki), from the "Free Game Boy Music Pack".
+ * Influenced by the Terminator 2 OST. Licensed CC-BY.
+ * Source: music/Free Game Boy Music Pack/free_08_terminate.c
+ * Artist: https://trominal.itch.io/
+ * Only the exported hUGESong_t symbol name was changed from the original.
+ */
+
 #include "hUGEDriver.h"
 #include <stddef.h>
 

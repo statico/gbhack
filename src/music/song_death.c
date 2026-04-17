@@ -1,3 +1,11 @@
+/*
+ * "Game Over" by Beatscribe, from his free Game Boy music pack.
+ * Source: music/bs-free/bs-free-gameover.c
+ * Artist: https://www.beatscribe.com/
+ * Only the exported hUGESong_t symbol name was changed from the original;
+ * a trailing terminator row was also dropped to match the loop length.
+ */
+
 #include "hUGEDriver.h"
 #include <stddef.h>
 

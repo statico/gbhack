@@ -6,6 +6,10 @@ Very simple sound effect driver by Coffee 'Valen' Bat
 
 Thanks to bbbbbr for getting my code to ACTUALLY work
 
+Upstream: https://github.com/datmobiledev/cbtfx (referenced by the README of
+this project; the repo appears to have moved or gone offline). Used here as a
+third-party sound effect engine alongside hUGEDriver.
+
 */
 
 #include <gb/gb.h>

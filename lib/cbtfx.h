@@ -1,3 +1,13 @@
+/*
+
+CoffeeBaT-FX (CBT-FX) — public API header.
+
+Very simple sound effect driver by Coffee 'Valen' Bat. See cbtfx.c for the
+full origin notice. Upstream: https://github.com/datmobiledev/cbtfx (linked
+from this project's README; currently appears to be offline).
+
+*/
+
 #ifndef CBTFX_H_INCLUDE
 #define CBTFX_H_INCLUDE
 

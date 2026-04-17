@@ -1,3 +1,10 @@
+/*
+ * "Menu" by Beatscribe, from his free Game Boy music pack.
+ * Source: music/bs-free/bs-free-menu.c
+ * Artist: https://www.beatscribe.com/
+ * Only the exported hUGESong_t symbol name was changed from the original.
+ */
+
 #include "hUGEDriver.h"
 #include <stddef.h>
 

@@ -1,3 +1,11 @@
+/*
+ * "Darkstone Remix" by Tronimal (Yoki), from the "Free Game Boy Music Pack".
+ * Based on "Darkstone" by DeerTears. Licensed CC-BY.
+ * Source: music/Free Game Boy Music Pack/free_03_darkstone_remix.c
+ * Artist: https://trominal.itch.io/
+ * Only the exported hUGESong_t symbol name was changed from the original.
+ */
+
 #include "hUGEDriver.h"
 #include <stddef.h>
 

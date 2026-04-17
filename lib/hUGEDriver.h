@@ -1,3 +1,14 @@
+/*
+
+hUGEDriver — tracker-based music playback engine for the Game Boy.
+
+By SuperDisk (author of hUGETracker). hUGETracker and hUGEDriver are
+dedicated to the public domain.
+
+Upstream: https://github.com/SuperDisk/hUGEDriver
+
+*/
+
 #ifndef HUGEDRIVER_H_INCLUDE
 #define HUGEDRIVER_H_INCLUDE
 
