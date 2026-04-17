@@ -221,6 +221,15 @@ void items_spawn_for_level(uint8_t level) BANKED {
         item_spawn(type_id, fx, fy, qty);
     }
 
+    /* Always place at least 1 armor item */
+    if (level < 5) {
+        type_id = rng_range(6, 7);
+    } else {
+        type_id = rng_range(6, 10);
+    }
+    dungeon_find_random_floor(&fx, &fy);
+    item_spawn(type_id, fx, fy, 1);
+
     /* Always place at least 1 food item */
     dungeon_find_random_floor(&fx, &fy);
     item_spawn(rng_range(28, 29), fx, fy, 1);

@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "shop.h"
 #include "pet.h"
+#include "version.h"
 #include "../res/tiles.h"
 #include "../res/title_bg.h"
 #include <gb/cgb.h>
@@ -174,7 +175,7 @@ static void intro_screen(void) {
     /* Draw centered credits text */
     set_bkg_tile_xy(10, 2, TILE_INTRO_SWORD);
 
-    ui_draw_text(4, 4, "GBHack v1.0.0", 0);
+    ui_draw_text(4, 4, "GBHack " GBHACK_VERSION, 0);
 
     ui_draw_text(3, 6, "by @statico and", 0);
     ui_draw_text(5, 7, "Claude Code", 0);
