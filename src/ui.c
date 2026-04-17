@@ -893,16 +893,26 @@ static void select_menu_draw(uint8_t cursor) {
 
 uint8_t ui_select_menu(void) {
     uint8_t cursor;
+    uint8_t prev_cursor;
     uint8_t need_draw;
+    uint8_t ty;
 
     cursor = 0;
+    prev_cursor = 0;
     need_draw = 1;
 
     for (;;) {
         if (need_draw) {
             select_menu_draw(cursor);
             need_draw = 0;
+        } else if (prev_cursor != cursor) {
+            /* Incremental update: only redraw the two affected rows */
+            ty = 2 + prev_cursor * 2;
+            ui_draw_text(2, ty, " ", PAL_UI);
+            ty = 2 + cursor * 2;
+            ui_draw_text(2, ty, ">", PAL_UI);
         }
+        prev_cursor = cursor;
 
         wait_vbl_done();
         input_update();
@@ -913,7 +923,6 @@ uint8_t ui_select_menu(void) {
             } else {
                 cursor = SEL_COUNT - 1;
             }
-            need_draw = 1;
         }
 
         if (joy_pressed & J_DOWN) {
@@ -922,7 +931,6 @@ uint8_t ui_select_menu(void) {
             } else {
                 cursor = 0;
             }
-            need_draw = 1;
         }
 
         if (joy_pressed & J_A) {
@@ -937,7 +945,7 @@ uint8_t ui_select_menu(void) {
                 return SEL_MESSAGES;
             case SEL_MUSIC:
                 sound_toggle_music();
-                need_draw = 1;  /* refresh to show new state */
+                need_draw = 1;  /* refresh to show new label */
                 break;
             case SEL_SFX:
                 sound_toggle_sfx();
