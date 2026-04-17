@@ -213,40 +213,41 @@ static void connect_rooms(void) {
 static void place_doors(void) {
     uint8_t x, y;
     uint8_t terrain;
-    uint8_t adj_floor, adj_corr;
     uint8_t n_terrain, s_terrain, e_terrain, w_terrain;
+    uint8_t ns_has_floor, ew_has_floor;
+    uint8_t ns_both_wall, ew_both_wall;
 
     /*
-     * Place doors where a corridor cell is adjacent to a room floor cell.
-     * We look for corridor tiles that border room floor tiles.
+     * Place doors at pinch points: corridor cells where one axis
+     * connects to room floor and the perpendicular axis is walled.
+     * This prevents long runs of doors along parallel corridors.
      */
     for (y = 1; y < MAP_HEIGHT - 1; y++) {
         for (x = 1; x < MAP_WIDTH - 1; x++) {
             terrain = CELL_TERRAIN(dungeon_get_cell(x, y));
             if (terrain != TERRAIN_CORRIDOR) continue;
 
-            /* Check if this corridor tile is at a room edge transition */
             n_terrain = CELL_TERRAIN(dungeon_get_cell(x, y - 1));
             s_terrain = CELL_TERRAIN(dungeon_get_cell(x, y + 1));
             e_terrain = CELL_TERRAIN(dungeon_get_cell(x + 1, y));
             w_terrain = CELL_TERRAIN(dungeon_get_cell(x - 1, y));
 
-            adj_floor = 0;
-            adj_corr = 0;
+            ns_has_floor = (n_terrain == TERRAIN_FLOOR ||
+                            s_terrain == TERRAIN_FLOOR);
+            ew_has_floor = (e_terrain == TERRAIN_FLOOR ||
+                            w_terrain == TERRAIN_FLOOR);
+            ns_both_wall = (n_terrain == TERRAIN_WALL &&
+                            s_terrain == TERRAIN_WALL);
+            ew_both_wall = (e_terrain == TERRAIN_WALL &&
+                            w_terrain == TERRAIN_WALL);
 
-            if (n_terrain == TERRAIN_FLOOR) adj_floor = 1;
-            if (s_terrain == TERRAIN_FLOOR) adj_floor = 1;
-            if (e_terrain == TERRAIN_FLOOR) adj_floor = 1;
-            if (w_terrain == TERRAIN_FLOOR) adj_floor = 1;
-
-            if (n_terrain == TERRAIN_CORRIDOR) adj_corr = 1;
-            if (s_terrain == TERRAIN_CORRIDOR) adj_corr = 1;
-            if (e_terrain == TERRAIN_CORRIDOR) adj_corr = 1;
-            if (w_terrain == TERRAIN_CORRIDOR) adj_corr = 1;
-
-            /* Place door if corridor is adjacent to floor AND also to corridor/wall
-             * (i.e. it's the transition point, not deep inside a room) */
-            if (adj_floor && adj_corr) {
+            /*
+             * Valid door: floor on one axis, wall on the other.
+             * N/S has floor + E/W both wall = horizontal room edge
+             * E/W has floor + N/S both wall = vertical room edge
+             */
+            if ((ns_has_floor && ew_both_wall) ||
+                (ew_has_floor && ns_both_wall)) {
                 dungeon_set_cell(x, y, TERRAIN_DOOR_CLOSED);
             }
         }
