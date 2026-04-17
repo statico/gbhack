@@ -3,6 +3,9 @@ GBDK_HOME  = $(CURDIR)/../gbdk/
 LCC        = $(GBDK_HOME)bin/lcc
 PNG2ASSET  = $(GBDK_HOME)bin/png2asset
 
+# Parallel build by default
+MAKEFLAGS += --jobs=$(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
+
 # --- Project ---
 PROJECT_NAME = gbhack
 BINS         = build/$(PROJECT_NAME).gbc
@@ -13,7 +16,7 @@ LCCFLAGS += -Wm-yC
 LCCFLAGS += -Wm-yt0x1B    # MBC5 + RAM + Battery
 LCCFLAGS += -Wm-ya4        # 4 SRAM banks (32KB)
 LCCFLAGS += -Wm-yo16       # 16 ROM banks (256KB)
-LCCFLAGS += -Wm-yn"GBHACK"
+LCCFLAGS += -Wm-yn"GBHack"
 LCCFLAGS += -Ilib
 
 # --- Sources ---
