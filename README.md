@@ -4,9 +4,10 @@ A roguelike dungeon crawler for the Game Boy Color, inspired by NetHack. Written
 in C using GBDK (Game Boy Development Kit) and generated with
 [Claude Code](https://claude.ai/code).
 
-![Title screen](screenshots/gbhack-title.png)
-
-![Gameplay](screenshots/gbhack-screenshot.png)
+<p>
+  <img src="screenshots/gbhack-title.png" alt="Title screen" width="320">
+  <img src="screenshots/gbhack-screenshot.png" alt="Gameplay" width="320">
+</p>
 
 ## Overview
 
