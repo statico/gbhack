@@ -491,7 +491,7 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
             slot = slot_map[idx];
             letter = 'a' + slot;
 
-            /* Build the display line: "a) Item name" */
+            /* Build the display line: "a) Item name [E]" */
             lp = 0;
             line[lp++] = (char)letter;
             line[lp++] = ')';
@@ -505,17 +505,31 @@ uint8_t ui_inventory_screen(uint8_t filter_category) {
                 name = item_appearance_name(inventory[slot].type_id);
             }
 
-            /* Copy name, leave room for suffix */
-            for (i = 0; name[i] != '\0' && lp < SCREEN_W - 5; i++) {
+            /* Copy name */
+            for (i = 0; name[i] != '\0' && lp < SCREEN_W - 2; i++) {
                 line[lp++] = name[i];
+            }
+
+            /* Category suffix: identified potions + all scrolls */
+            if (itype->category == ICAT_POTION &&
+                (inventory[slot].flags & IFLAG_IDENTIFIED) &&
+                lp + 5 <= SCREEN_W - 2) {
+                line[lp++] = ' '; line[lp++] = 'p'; line[lp++] = 'o';
+                line[lp++] = 't'; line[lp++] = '.';
+            } else if (itype->category == ICAT_SCROLL &&
+                       lp + 5 <= SCREEN_W - 2) {
+                line[lp++] = ' '; line[lp++] = 's'; line[lp++] = 'c';
+                line[lp++] = 'r'; line[lp++] = 'l';
             }
 
             /* Equipped marker */
             if (inventory[slot].flags & IFLAG_EQUIPPED) {
-                line[lp++] = ' ';
-                line[lp++] = '[';
-                line[lp++] = 'E';
-                line[lp++] = ']';
+                if (lp + 4 <= SCREEN_W) {
+                    line[lp++] = ' ';
+                    line[lp++] = '[';
+                    line[lp++] = 'E';
+                    line[lp++] = ']';
+                }
             }
 
             line[lp] = '\0';
