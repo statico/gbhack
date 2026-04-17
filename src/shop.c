@@ -70,8 +70,9 @@ static uint8_t pick_shop_item(void) {
         type_id = rng_range(28, 30);
         if (type_id == 30) type_id = 31;
     } else {
-        /* Tool: 5% */
-        type_id = rng_range(33, 39);
+        /* Tool: 5% — skip lamp (37) */
+        type_id = rng_range(33, 38);
+        if (type_id >= 37) type_id++;
     }
 
     return type_id;
