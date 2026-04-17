@@ -5,6 +5,7 @@
 #include "player.h"
 #include "render.h"
 #include "rng.h"
+#include "items.h"
 #include "sound.h"
 
 extern const char *monster_name(uint8_t type_id);
@@ -130,6 +131,11 @@ void monster_kill(uint8_t idx) BANKED {
     /* Award XP: monster level * 5 */
     xp_reward = (uint16_t)mt->level * 5;
     player_gain_xp(xp_reward);
+
+    /* 80% chance to drop a corpse */
+    if (rng_range(0, 99) < 80) {
+        item_spawn(30, monsters[idx].x, monsters[idx].y, 1);
+    }
 
     monsters[idx].active = 0;
 }

@@ -160,8 +160,9 @@ static uint8_t pick_random_item(uint8_t level) {
             type_id = rng_range(23, 27);
         }
     } else if (roll < 95) {
-        /* Food: 10% */
-        type_id = rng_range(28, 31);
+        /* Food: 10% — skip corpse (30), only ration/apple/tin */
+        type_id = rng_range(28, 30);
+        if (type_id == 30) type_id = 31;  /* remap corpse -> tin */
     } else {
         /* Tool: 5% */
         type_id = rng_range(33, 39);
